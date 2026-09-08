@@ -689,3 +689,14 @@ label { color: #3c4854; font-size: 12px; font-weight: 750; }
         max-width: 5px !important;
     }
 }
+/* HIDE HAMBURGER MENU BUTTON */
+#menuButton {
+    display: none !important;
+}
+
+.topbar-left,
+.page-header,
+.header-left,
+.content-header {
+    gap: 12px;
+}
