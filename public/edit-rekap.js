@@ -1,76 +1,289 @@
-import { apiFetch, confirmDialog, formatDateIndonesia, setButtonLoading, showToast, todayLocal } from "/common.js";
+import {
+  apiFetch,
+  confirmDialog,
+  formatDateIndonesia,
+  setButtonLoading,
+  showToast,
+  todayLocal,
+} from "/common.js";
 
-const dateInput = document.getElementById("editDate");
-const loadButton = document.getElementById("loadEditButton");
-const editCard = document.getElementById("editCard");
-const editTitle = document.getElementById("editTitle");
-const editCount = document.getElementById("editCount");
-const namesInput = document.getElementById("editNames");
-const saveButton = document.getElementById("saveEditButton");
-const errorBox = document.getElementById("editErrorBox");
-const errorText = document.getElementById("editErrorText");
+const dateInput =
+  document.getElementById("editDate");
+
+const loadButton =
+  document.getElementById("loadEditButton");
+
+const editCard =
+  document.getElementById("editCard");
+
+const editTitle =
+  document.getElementById("editTitle");
+
+const editCount =
+  document.getElementById("editCount");
+
+const grid =
+  document.getElementById("editEmployeeGrid");
+
+const searchInput =
+  document.getElementById("editEmployeeSearch");
+
+const clearButton =
+  document.getElementById("clearEditSelectionButton");
+
+const saveButton =
+  document.getElementById("saveEditButton");
+
+const errorBox =
+  document.getElementById("editErrorBox");
+
+const errorText =
+  document.getElementById("editErrorText");
+
+let employees = [];
+const selectedIds = new Set();
 
 dateInput.value = todayLocal();
 
-function getNames() {
-  const seen = new Set();
-  return namesInput.value.split(/\r?\n/).map((name) => name.replace(/^\s*\d+[.)-]?\s*/, "").trim()).filter((name) => {
-    const key = name.toLocaleLowerCase("id-ID");
-    if (!name || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+function showError(message) {
+  errorText.textContent = message;
+  errorBox.classList.remove("hidden");
+}
+
+function hideError() {
+  errorText.textContent = "";
+  errorBox.classList.add("hidden");
 }
 
 function updateCount() {
-  editCount.textContent = `${getNames().length} pegawai`;
+  editCount.textContent =
+    `${selectedIds.size} pegawai`;
+}
+
+function renderEmployees() {
+  const query =
+    searchInput.value
+      .trim()
+      .toLocaleLowerCase("id-ID");
+
+  const filtered =
+    employees.filter((employee) =>
+      employee.name
+        .toLocaleLowerCase("id-ID")
+        .includes(query)
+    );
+
+  grid.innerHTML = "";
+
+  filtered.forEach((employee) => {
+
+    const button =
+      document.createElement("button");
+
+    button.type = "button";
+    button.className = "employee-select-card present";
+
+    if (selectedIds.has(employee.id)) { button.classList.remove("present"); button.classList.add("selected"); }
+
+    const name =
+      document.createElement("span");
+
+    name.className =
+      "employee-select-name";
+
+    name.textContent =
+      employee.name;
+
+    const unit =
+      document.createElement("span");
+
+    unit.className =
+      "employee-select-unit";
+
+    unit.textContent =
+      employee.unit || "Pegawai";
+
+    button.appendChild(name);
+    button.appendChild(unit);
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        if (selectedIds.has(employee.id)) {
+          selectedIds.delete(employee.id);
+        } else {
+          selectedIds.add(employee.id);
+        }
+
+        updateCount();
+        renderEmployees();
+      }
+    );
+
+    grid.appendChild(button);
+  });
+}
+
+function getSelectedNames() {
+  return employees
+    .filter((employee) =>
+      selectedIds.has(employee.id)
+    )
+    .map((employee) =>
+      employee.name
+    );
 }
 
 async function loadData() {
-  if (!dateInput.value) return;
-  errorBox.classList.add("hidden");
-  setButtonLoading(loadButton, true, "Memuat...");
+  if (!dateInput.value) {
+    return;
+  }
+
+  hideError();
+
+  setButtonLoading(
+    loadButton,
+    true,
+    "Memuat..."
+  );
+
   try {
-    const data = await apiFetch(`/api/daily?date=${encodeURIComponent(dateInput.value)}`);
-    editTitle.textContent = `Edit rekap ${formatDateIndonesia(data.date)}`;
-    namesInput.value = data.names.join("\n");
+    const [
+      employeeData,
+      dailyData,
+    ] =
+      await Promise.all([
+        apiFetch("/api/employees"),
+        apiFetch(
+          `/api/daily?date=${encodeURIComponent(dateInput.value)}`
+        ),
+      ]);
+
+    employees =
+      employeeData.employees || [];
+
+    selectedIds.clear();
+
+    const selectedNames =
+      new Set(
+        (dailyData.names || [])
+          .map((name) =>
+            name.toLocaleLowerCase("id-ID")
+          )
+      );
+
+    employees.forEach((employee) => {
+      if (
+        selectedNames.has(
+          employee.name.toLocaleLowerCase("id-ID")
+        )
+      ) {
+        selectedIds.add(employee.id);
+      }
+    });
+
+    editTitle.textContent =
+      `Edit rekap ${formatDateIndonesia(dateInput.value)}`;
+
     updateCount();
+    renderEmployees();
+
     editCard.classList.remove("hidden");
+
   } catch (error) {
-    showToast(error.message || "Gagal mengambil data.", "error");
+    showError(
+      error.message ||
+      "Gagal mengambil data."
+    );
+
   } finally {
-    setButtonLoading(loadButton, false);
+    setButtonLoading(
+      loadButton,
+      false
+    );
   }
 }
 
 async function saveData() {
-  const names = getNames();
-  const confirmed = await confirmDialog({
-    title: "Simpan koreksi rekap?",
-    message: names.length
-      ? `Daftar pada ${formatDateIndonesia(dateInput.value)} akan diganti menjadi ${names.length} pegawai.`
-      : `Semua data keterlambatan pada ${formatDateIndonesia(dateInput.value)} akan dihapus.`,
-    confirmText: "Simpan perubahan",
-    danger: names.length === 0,
-  });
-  if (!confirmed) return;
+  const names =
+    getSelectedNames();
 
-  setButtonLoading(saveButton, true, "Menyimpan...");
-  try {
-    await apiFetch("/api/daily", {
-      method: "PUT",
-      body: JSON.stringify({ date: dateInput.value, employeeNames: names }),
+  const confirmed =
+    await confirmDialog({
+      title: "Pastikan perubahan sudah sesuai",
+      message:
+        names.length > 0
+          ? `${names.length} pegawai akan tercatat absen pada ${formatDateIndonesia(dateInput.value)}. Apakah data sudah sesuai?`
+          : `Seluruh data absen pada ${formatDateIndonesia(dateInput.value)} akan dihapus. Apakah Anda yakin?`,
+      confirmText: "Ya, Simpan",
+      danger: names.length === 0,
     });
-    showToast("Rekap harian berhasil diperbarui.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  setButtonLoading(
+    saveButton,
+    true,
+    "Menyimpan..."
+  );
+
+  try {
+    await apiFetch(
+      "/api/daily",
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          date: dateInput.value,
+          employeeNames: names,
+        }),
+      }
+    );
+
+    showToast(
+      "Rekap harian berhasil diperbarui."
+    );
+
     await loadData();
+
   } catch (error) {
-    errorText.textContent = error.message || "Gagal menyimpan perubahan.";
-    errorBox.classList.remove("hidden");
+    showError(
+      error.message ||
+      "Gagal menyimpan perubahan."
+    );
+
   } finally {
-    setButtonLoading(saveButton, false);
+    setButtonLoading(
+      saveButton,
+      false
+    );
   }
 }
 
-loadButton.addEventListener("click", loadData);
-namesInput.addEventListener("input", updateCount);
-saveButton.addEventListener("click", saveData);
+loadButton.addEventListener(
+  "click",
+  loadData
+);
+
+searchInput.addEventListener(
+  "input",
+  renderEmployees
+);
+
+clearButton.addEventListener(
+  "click",
+  () => {
+    selectedIds.clear();
+    updateCount();
+    renderEmployees();
+  }
+);
+
+saveButton.addEventListener(
+  "click",
+  saveData
+);
+
+loadData();

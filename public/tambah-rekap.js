@@ -1,65 +1,355 @@
-import { apiFetch, setButtonLoading, showToast, todayLocal } from "/common.js";
+import {
+  apiFetch,
+  confirmDialog,
+  formatDateIndonesia,
+  setButtonLoading,
+  showToast,
+  todayLocal,
+} from "/common.js";
 
-const form = document.getElementById("attendanceForm");
-const dateInput = document.getElementById("attendanceDate");
-const namesInput = document.getElementById("employeeNames");
-const previewText = document.getElementById("previewText");
-const errorBox = document.getElementById("errorBox");
-const errorText = document.getElementById("errorText");
-const submitButton = document.getElementById("submitButton");
+const dateInput =
+  document.getElementById("attendanceDate");
+
+const grid =
+  document.getElementById("employeeSelectionGrid");
+
+const searchInput =
+  document.getElementById("employeeSearch");
+
+const selectedCount =
+  document.getElementById("selectedCount");
+
+const submitButton =
+  document.getElementById("submitButton");
+
+const clearButton =
+  document.getElementById("clearSelectionButton");
+
+const emptyBox =
+  document.getElementById("employeeEmpty");
+
+const errorBox =
+  document.getElementById("errorBox");
+
+const errorText =
+  document.getElementById("errorText");
+
+let employees = [];
+const selectedIds = new Set();
+
+let dateAlreadyFilled = false;
+let checkingDate = false;
 
 dateInput.value = todayLocal();
-
-function getNames() {
-  const seen = new Set();
-  return namesInput.value
-    .split(/\r?\n/)
-    .map((name) => name.replace(/^\s*\d+[.)-]?\s*/, "").trim())
-    .filter((name) => {
-      const key = name.toLocaleLowerCase("id-ID");
-      if (!name || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-}
-
-function updatePreview() {
-  const count = getNames().length;
-  previewText.textContent = count ? `${count} pegawai akan diproses.` : "Belum ada nama pegawai.";
-}
 
 function showError(message) {
   errorText.textContent = message;
   errorBox.classList.remove("hidden");
 }
+
 function hideError() {
   errorText.textContent = "";
   errorBox.classList.add("hidden");
 }
 
-namesInput.addEventListener("input", updatePreview);
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+function updateCount() {
+  selectedCount.textContent =
+    `${selectedIds.size} pegawai`;
+}
+
+function renderEmployees() {
+  const query =
+    searchInput.value
+      .trim()
+      .toLocaleLowerCase("id-ID");
+
+  const filtered =
+    employees.filter((employee) =>
+      employee.name
+        .toLocaleLowerCase("id-ID")
+        .includes(query)
+    );
+
+  grid.innerHTML = "";
+
+  emptyBox.classList.toggle(
+    "hidden",
+    filtered.length > 0
+  );
+
+  filtered.forEach((employee) => {
+
+    const button =
+      document.createElement("button");
+
+    button.type = "button";
+
+    button.className =
+      "employee-select-card";
+
+    if (selectedIds.has(employee.id)) {
+      button.classList.add("selected");
+    }
+
+    const name =
+      document.createElement("span");
+
+    name.className =
+      "employee-select-name";
+
+    name.textContent =
+      employee.name;
+
+    const unit =
+      document.createElement("span");
+
+    unit.className =
+      "employee-select-unit";
+
+    unit.textContent =
+      employee.unit || "Pegawai";
+
+    button.appendChild(name);
+    button.appendChild(unit);
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        if (selectedIds.has(employee.id)) {
+          selectedIds.delete(employee.id);
+        } else {
+          selectedIds.add(employee.id);
+        }
+
+        updateCount();
+        renderEmployees();
+      }
+    );
+
+    grid.appendChild(button);
+  });
+}
+
+async function loadEmployees() {
   hideError();
-  const employeeNames = getNames();
 
-  if (!dateInput.value) return showError("Tanggal wajib diisi.");
-  if (!employeeNames.length) return showError("Minimal satu nama pegawai harus diisi.");
-
-  setButtonLoading(submitButton, true, "Menyimpan...");
   try {
-    const result = await apiFetch("/api/attendance", {
-      method: "POST",
-      body: JSON.stringify({ attendanceDate: dateInput.value, employeeNames }),
+    const data =
+      await apiFetch("/api/employees");
+
+    employees =
+      data.employees || [];
+
+    renderEmployees();
+    updateCount();
+
+  } catch (error) {
+    showError(
+      error.message ||
+      "Gagal memuat daftar pegawai."
+    );
+  }
+}
+
+async function checkDateAvailability() {
+  hideError();
+
+  const date =
+    dateInput.value;
+
+  dateAlreadyFilled = false;
+
+  if (!date) {
+    submitButton.disabled = true;
+    return false;
+  }
+
+  checkingDate = true;
+  submitButton.disabled = true;
+
+  try {
+    const data =
+      await apiFetch(
+        `/api/daily?date=${encodeURIComponent(date)}`
+      );
+
+    if ((data.total || 0) > 0) {
+      dateAlreadyFilled = true;
+
+      selectedIds.clear();
+      updateCount();
+      renderEmployees();
+
+      showError(
+        "Tanggal ini sudah memiliki rekap. " +
+        "Data tidak dapat ditambahkan kembali melalui Tambah Rekap. " +
+        "Gunakan menu Edit Rekap untuk melakukan koreksi."
+      );
+
+      submitButton.disabled = true;
+
+      return false;
+    }
+
+    submitButton.disabled = false;
+
+    return true;
+
+  } catch (error) {
+    showError(
+      error.message ||
+      "Gagal memeriksa status tanggal."
+    );
+
+    submitButton.disabled = true;
+
+    return false;
+
+  } finally {
+    checkingDate = false;
+  }
+}
+
+function getSelectedNames() {
+  return employees
+    .filter((employee) =>
+      selectedIds.has(employee.id)
+    )
+    .map((employee) =>
+      employee.name
+    );
+}
+
+async function saveAttendance() {
+  hideError();
+
+  const date =
+    dateInput.value;
+
+  const names =
+    getSelectedNames();
+
+  if (!date) {
+    showError(
+      "Tanggal wajib dipilih."
+    );
+    return;
+  }
+
+  if (names.length === 0) {
+    showError(
+      "Pilih minimal satu pegawai."
+    );
+    return;
+  }
+
+  /*
+   * Cek ulang sebelum menyimpan.
+   * Ini mencegah kondisi ketika tanggal telah diisi
+   * oleh proses lain setelah halaman dibuka.
+   */
+  const dateAvailable =
+    await checkDateAvailability();
+
+  if (!dateAvailable) {
+    return;
+  }
+
+  const confirmed =
+    await confirmDialog({
+      title: "Pastikan data sudah sesuai",
+      message:
+        `${names.length} pegawai akan dicatat absen pada ` +
+        `${formatDateIndonesia(date)}. ` +
+        `Apakah data sudah sesuai?`,
+      confirmText: "Ya, Simpan",
+      danger: false,
     });
 
-    const duplicateNote = result.duplicateCount ? ` ${result.duplicateCount} data duplikat dilewati.` : "";
-    showToast(`${result.addedCount} data berhasil ditambahkan.${duplicateNote}`);
-    namesInput.value = "";
-    updatePreview();
-  } catch (error) {
-    showError(error.message || "Gagal menyimpan data.");
-  } finally {
-    setButtonLoading(submitButton, false);
+  if (!confirmed) {
+    return;
   }
-});
+
+  setButtonLoading(
+    submitButton,
+    true,
+    "Menyimpan..."
+  );
+
+  try {
+    const result =
+      await apiFetch(
+        "/api/attendance",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            attendanceDate: date,
+            employeeNames: names,
+          }),
+        }
+      );
+
+    const duplicateText =
+      result.duplicateCount
+        ? ` ${result.duplicateCount} data sebelumnya dilewati.`
+        : "";
+
+    showToast(
+      `${result.addedCount} data berhasil disimpan.${duplicateText}`
+    );
+
+    selectedIds.clear();
+    updateCount();
+    renderEmployees();
+
+  } catch (error) {
+    showError(
+      error.message ||
+      "Gagal menyimpan rekap."
+    );
+
+  } finally {
+    setButtonLoading(
+      submitButton,
+      false
+    );
+  }
+}
+
+dateInput.addEventListener(
+  "change",
+  async () => {
+    selectedIds.clear();
+    updateCount();
+    renderEmployees();
+
+    await checkDateAvailability();
+  }
+);
+
+searchInput.addEventListener(
+  "input",
+  renderEmployees
+);
+
+clearButton.addEventListener(
+  "click",
+  () => {
+    selectedIds.clear();
+    updateCount();
+    renderEmployees();
+  }
+);
+
+submitButton.addEventListener(
+  "click",
+  saveAttendance
+);
+
+async function initializePage() {
+  await loadEmployees();
+  await checkDateAvailability();
+}
+
+initializePage();

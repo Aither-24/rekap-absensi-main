@@ -282,6 +282,20 @@ async function main() {
           return;
         }
 
+        // Pengamanan:
+        // Tambah Rekap hanya boleh digunakan untuk tanggal yang belum pernah diisi.
+        // Koreksi tanggal yang sudah ada harus melalui PUT /api/daily (Edit Rekap).
+        const existingReport = getDailyReport(db, attendanceDate);
+
+        if (existingReport.names.length > 0) {
+          sendJson(res, 409, {
+            success: false,
+            error:
+              "Tanggal tersebut sudah memiliki rekap. Gunakan menu Edit Rekap untuk melakukan perubahan.",
+          });
+          return;
+        }
+
         let addedCount = 0;
         let duplicateCount = 0;
 

@@ -1,88 +1,230 @@
-import { apiFetch, confirmDialog, formatDateIndonesia, setButtonLoading, showToast, todayLocal } from "/common.js";
+import {
+  apiFetch,
+  setButtonLoading,
+  showToast,
+  todayLocal,
+} from "/common.js";
 
-const dateInput = document.getElementById("attendanceDate");
-const showButton = document.getElementById("showReportButton");
-const resultBox = document.getElementById("resultBox");
-const resultDate = document.getElementById("resultDate");
-const resultTotal = document.getElementById("resultTotal");
-const tableBody = document.getElementById("dailyTableBody");
-const emptyBox = document.getElementById("emptyBox");
-const errorBox = document.getElementById("errorBox");
-const errorText = document.getElementById("errorText");
+const dateInput =
+  document.getElementById("attendanceDate");
 
-const requestedDate = new URLSearchParams(window.location.search).get("date");
-dateInput.value = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate || "") ? requestedDate : todayLocal();
+const showButton =
+  document.getElementById("showReportButton");
+
+const resultBox =
+  document.getElementById("resultBox");
+
+const resultSummary =
+  document.getElementById("resultSummary");
+
+const reportText =
+  document.getElementById("dailyReportText");
+
+const copyButton =
+  document.getElementById("copyReportButton");
+
+const emptyBox =
+  document.getElementById("emptyBox");
+
+const errorBox =
+  document.getElementById("errorBox");
+
+const errorText =
+  document.getElementById("errorText");
+
+const requestedDate =
+  new URLSearchParams(
+    window.location.search
+  ).get("date");
+
+dateInput.value =
+  /^\d{4}-\d{2}-\d{2}$/.test(
+    requestedDate || ""
+  )
+    ? requestedDate
+    : todayLocal();
 
 function showError(message) {
   errorText.textContent = message;
   errorBox.classList.remove("hidden");
 }
+
 function hideError() {
   errorText.textContent = "";
   errorBox.classList.add("hidden");
 }
 
-function render(data) {
-  tableBody.innerHTML = "";
-  resultDate.textContent = formatDateIndonesia(data.date, true);
-  resultTotal.textContent = `${data.total} pegawai`;
+function formatShortDate(date) {
+  const [year, month, day] = date.split("-");
 
-  if (!data.names?.length) {
-    resultBox.classList.add("hidden");
-    emptyBox.classList.remove("hidden");
-    return;
-  }
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
 
-  emptyBox.classList.add("hidden");
-  resultBox.classList.remove("hidden");
+  return `${Number(day)} ${monthNames[Number(month) - 1]} ${year}`;
+}
 
-  data.names.forEach((name, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td class="cell-number">${index + 1}</td>
-      <td><span class="employee-name"></span></td>
-      <td><div class="row-actions"><button type="button" class="btn btn-danger-soft btn-sm">Hapus</button></div></td>`;
-    row.querySelector(".employee-name").textContent = name;
-    row.querySelector("button").addEventListener("click", () => removeAttendance(name));
-    tableBody.appendChild(row);
-  });
+function createReportText(
+  date,
+  names
+) {
+  const header =
+    `Rekap pegawai absen >7.00 (${formatShortDate(date)}):`;
+
+  const rows =
+    names.map(
+      (name, index) =>
+        `${index + 1}. ${name}`
+    );
+
+  return [
+    header,
+    ...rows,
+  ].join("\n");
 }
 
 async function loadDailyReport() {
   hideError();
-  const date = dateInput.value;
-  if (!date) return showError("Silakan pilih tanggal terlebih dahulu.");
 
-  setButtonLoading(showButton, true, "Memuat...");
+  const date =
+    dateInput.value;
+
+  if (!date) {
+    showError(
+      "Silakan pilih tanggal."
+    );
+    return;
+  }
+
+  setButtonLoading(
+    showButton,
+    true,
+    "Memuat..."
+  );
+
   try {
-    render(await apiFetch(`/api/daily?date=${encodeURIComponent(date)}`));
+    const data =
+      await apiFetch(
+        `/api/daily?date=${encodeURIComponent(date)}`
+      );
+
+    if (!data.names?.length) {
+
+      resultBox.classList.add(
+        "hidden"
+      );
+
+      emptyBox.classList.remove(
+        "hidden"
+      );
+
+      reportText.value = "";
+
+      return;
+    }
+
+    emptyBox.classList.add(
+      "hidden"
+    );
+
+    resultBox.classList.remove(
+      "hidden"
+    );
+
+    resultSummary.textContent =
+      `${data.total} pegawai tercatat`;
+
+    reportText.value =
+      createReportText(
+        data.date,
+        data.names
+      );
+
+    reportText.style.height = "auto";
+
+    reportText.style.height =
+      `${Math.max(
+        220,
+        reportText.scrollHeight + 4
+      )}px`;
+
   } catch (error) {
-    resultBox.classList.add("hidden");
-    emptyBox.classList.add("hidden");
-    showError(error.message || "Gagal mengambil data rekap harian.");
+
+    resultBox.classList.add(
+      "hidden"
+    );
+
+    emptyBox.classList.add(
+      "hidden"
+    );
+
+    showError(
+      error.message ||
+      "Gagal mengambil rekap harian."
+    );
+
   } finally {
-    setButtonLoading(showButton, false);
+
+    setButtonLoading(
+      showButton,
+      false
+    );
   }
 }
 
-async function removeAttendance(name) {
-  const date = dateInput.value;
-  const confirmed = await confirmDialog({
-    title: "Hapus data keterlambatan?",
-    message: `Data ${name} pada ${formatDateIndonesia(date)} akan dihapus. Tindakan ini digunakan untuk koreksi data dan tidak dapat dibatalkan.`,
-    confirmText: "Ya, hapus",
-  });
-  if (!confirmed) return;
+async function copyReport() {
+  if (!reportText.value) {
+    return;
+  }
 
   try {
-    await apiFetch(`/api/attendance?date=${encodeURIComponent(date)}&name=${encodeURIComponent(name)}`, { method: "DELETE" });
-    showToast(`Data ${name} berhasil dihapus.`);
-    await loadDailyReport();
-  } catch (error) {
-    showToast(error.message || "Gagal menghapus data.", "error");
+
+    await navigator.clipboard.writeText(
+      reportText.value
+    );
+
+    showToast(
+      "Teks rekap berhasil disalin."
+    );
+
+  } catch {
+
+    reportText.select();
+
+    document.execCommand(
+      "copy"
+    );
+
+    showToast(
+      "Teks rekap berhasil disalin."
+    );
   }
 }
 
-showButton.addEventListener("click", loadDailyReport);
-dateInput.addEventListener("change", loadDailyReport);
+showButton.addEventListener(
+  "click",
+  loadDailyReport
+);
+
+dateInput.addEventListener(
+  "change",
+  loadDailyReport
+);
+
+copyButton.addEventListener(
+  "click",
+  copyReport
+);
+
 loadDailyReport();

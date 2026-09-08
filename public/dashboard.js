@@ -24,7 +24,7 @@ function openDaysModal() {
   modal.className = "modal modal-wide";
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
-  modal.innerHTML = `<div class="modal-header modal-title-row"><div><h3>Daftar Hari Keterlambatan</h3><p>${dashboardData.month}</p></div><button class="icon-action" data-close aria-label="Tutup">Ã—</button></div><div class="modal-body modal-scroll"><div class="day-detail-list"></div></div><div class="modal-actions"><a class="btn btn-secondary" href="/rekap-bulanan.html">Rekap Bulanan</a><button class="btn btn-primary" data-close>Tutup</button></div>`;
+  modal.innerHTML = `<div class="modal-header modal-title-row"><div><h3>Daftar Hari Keterlambatan</h3><p>${dashboardData.month}</p></div><button class="icon-action" data-close aria-label="Tutup">&#10005;</button></div><div class="modal-body modal-scroll"><div class="day-detail-list"></div></div><div class="modal-actions"><a class="btn btn-secondary" href="/rekap-bulanan.html">Rekap Bulanan</a><button class="btn btn-primary" data-close>Tutup</button></div>`;
   const list = modal.querySelector(".day-detail-list");
   dashboardData.dailySummaries.forEach((item) => {
     const block = document.createElement("article");
@@ -133,3 +133,170 @@ refreshButton?.addEventListener("click", loadDashboard);
 viewAllDaysButton?.addEventListener("click", openDaysModal);
 viewAllLateButton?.addEventListener("click", openDaysModal);
 loadDashboard();
+
+/* RECENT CARD FIRST NAME PATCH */
+
+function getRecentCardFirstName(fullName) {
+  const clean =
+    String(fullName || "").trim();
+
+  if (!clean) {
+    return "";
+  }
+
+  const parts =
+    clean.split(/\s+/);
+
+  const titlePrefixes = [
+    "dr",
+    "dr.",
+    "drg",
+    "drg.",
+    "ns",
+    "ns.",
+    "apt",
+    "apt."
+  ];
+
+  const first =
+    parts[0].toLocaleLowerCase("id-ID");
+
+  if (
+    parts.length >= 2 &&
+    titlePrefixes.includes(first)
+  ) {
+    return `${parts[0]} ${parts[1]}`;
+  }
+
+  return parts[0];
+}
+
+function shortenRecentCardNamesLine(text) {
+  const clean =
+    String(text || "").trim();
+
+  if (!clean) {
+    return clean;
+  }
+
+  if (clean.includes("Hanya menampilkan")) {
+    return clean;
+  }
+
+  if (clean === "PEGAWAI") {
+    return clean;
+  }
+
+  if (
+    /Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember/i
+      .test(clean)
+  ) {
+    return clean;
+  }
+
+  if (!clean.includes(",") && !/\+\d+\s+lainnya/i.test(clean)) {
+    return clean;
+  }
+
+  const match =
+    clean.match(/^(.*?)(\s*\+\d+\s+lainnya)?$/i);
+
+  if (!match) {
+    return clean;
+  }
+
+  const namesPart =
+    (match[1] || "").trim();
+
+  const suffix =
+    match[2] || "";
+
+  const shortNames =
+    namesPart
+      .split(",")
+      .map((name) => getRecentCardFirstName(name))
+      .filter(Boolean)
+      .join(", ");
+
+  return `${shortNames}${suffix}`;
+}
+
+function applyRecentCardFirstNames() {
+  const cards =
+    Array.from(
+      document.querySelectorAll(".card, section, .panel")
+    );
+
+  const recentCard =
+    cards.find((card) =>
+      /Keterlambatan Terbaru/i.test(card.textContent || "")
+    );
+
+  if (!recentCard) {
+    return;
+  }
+
+  const candidates =
+    recentCard.querySelectorAll("p, span, div");
+
+  candidates.forEach((element) => {
+    if (element.children.length > 0) {
+      return;
+    }
+
+    const original =
+      (element.textContent || "").trim();
+
+    if (!original) {
+      return;
+    }
+
+    const updated =
+      shortenRecentCardNamesLine(original);
+
+    if (updated !== original) {
+      element.textContent = updated;
+    }
+  });
+}
+
+function watchRecentCardFirstNames() {
+  applyRecentCardFirstNames();
+
+  const cards =
+    Array.from(
+      document.querySelectorAll(".card, section, .panel")
+    );
+
+  const recentCard =
+    cards.find((card) =>
+      /Keterlambatan Terbaru/i.test(card.textContent || "")
+    );
+
+  if (!recentCard) {
+    return;
+  }
+
+  if (recentCard.__firstNameObserverAttached) {
+    return;
+  }
+
+  const observer =
+    new MutationObserver(() => {
+      applyRecentCardFirstNames();
+    });
+
+  observer.observe(recentCard, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
+  recentCard.__firstNameObserverAttached = true;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(watchRecentCardFirstNames, 100);
+});
+setTimeout(watchRecentCardFirstNames, 300);
+setTimeout(watchRecentCardFirstNames, 800);

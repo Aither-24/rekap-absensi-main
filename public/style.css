@@ -700,3 +700,480 @@ label { color: #3c4854; font-size: 12px; font-weight: 750; }
 .content-header {
     gap: 12px;
 }
+/* EMPLOYEE SELECTION UI V2 */
+
+.attendance-selection-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 20px;
+}
+
+.selection-summary {
+    min-width: 150px;
+    padding: 12px 16px;
+    border: 1px solid #e4e9ee;
+    border-radius: 12px;
+    background: #f8fafb;
+}
+
+.selection-summary-label {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12px;
+    color: #7c8794;
+}
+
+.selection-summary strong {
+    font-size: 16px;
+    color: #17212b;
+}
+
+.selection-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.employee-filter-input {
+    max-width: 360px;
+}
+
+.employee-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.employee-select-card {
+    width: 100%;
+    min-height: 66px;
+    padding: 12px 14px;
+    border: 1px solid #dde4e9;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #17212b;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.employee-select-card:hover {
+    border-color: #b8c4cc;
+    background: #f7f9fa;
+}
+
+.employee-select-card:active {
+    transform: scale(0.99);
+}
+
+.employee-select-card.selected {
+    border-color: #dc3545;
+    background: #fff0f1;
+    color: #c62838;
+    box-shadow:
+        inset 4px 0 0 #dc3545;
+}
+
+.employee-select-name {
+    display: block;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.employee-select-unit {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #86919c;
+}
+
+.employee-select-card.selected
+.employee-select-unit {
+    color: #b94b56;
+}
+
+.daily-copy-text {
+    display: block;
+    width: 100%;
+    min-height: 260px;
+    resize: vertical;
+    padding: 20px;
+    border: 1px solid #e1e6eb;
+    border-radius: 12px;
+    background: #fafbfc;
+    color: #17212b;
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    outline: none;
+}
+
+.daily-copy-text:focus {
+    border-color: #0f966d;
+    box-shadow:
+        0 0 0 3px rgba(15,150,109,0.1);
+}
+
+@media (max-width: 900px) {
+
+    .employee-selection-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 620px) {
+
+    .employee-selection-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attendance-selection-header,
+    .selection-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .employee-filter-input {
+        max-width: none;
+    }
+
+}
+/* PAGINATION PEGAWAI V2 */
+
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    padding: 16px 20px;
+
+    border-top:
+        1px solid #e7ebee;
+
+    background:
+        #ffffff;
+}
+
+.pagination-wrapper.hidden {
+    display: none !important;
+}
+
+.pagination-info {
+    margin: 0;
+
+    font-size: 13px;
+
+    color:
+        #7a8793;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.pagination-pages {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+}
+
+.pagination-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    border:
+        1px solid #dce3e8;
+
+    border-radius:
+        8px;
+
+    background:
+        #ffffff;
+
+    color:
+        #566370;
+
+    font-size:
+        13px;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+}
+
+.pagination-number:hover {
+    border-color:
+        #14966d;
+
+    color:
+        #14966d;
+}
+
+.pagination-number.active {
+    border-color:
+        #14966d;
+
+    background:
+        #14966d;
+
+    color:
+        #ffffff;
+}
+
+.pagination-nav-button {
+    min-height:
+        34px;
+
+    padding:
+        0 12px;
+
+    border:
+        1px solid #dce3e8;
+
+    border-radius:
+        8px;
+
+    background:
+        #ffffff;
+
+    color:
+        #566370;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+}
+
+.pagination-nav-button:hover:not(:disabled) {
+    border-color:
+        #14966d;
+
+    color:
+        #14966d;
+}
+
+.pagination-nav-button:disabled {
+    opacity:
+        0.4;
+
+    cursor:
+        not-allowed;
+}
+
+@media (max-width: 700px) {
+
+    .pagination-wrapper {
+        flex-direction:
+            column;
+
+        align-items:
+            stretch;
+    }
+
+    .pagination-controls {
+        justify-content:
+            space-between;
+    }
+
+    .pagination-pages {
+        overflow-x:
+            auto;
+
+        justify-content:
+            center;
+    }
+
+}
+/* NAV ICON SYMBOL PATCH */
+.nav-icon {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+/* EDIT REKAP GREEN RED STATE */
+
+/* Default pada halaman edit = masuk / normal */
+.employee-select-card.present {
+    border-color: #18a875 !important;
+    background: #eefaf5 !important;
+    color: #117a57 !important;
+    box-shadow: inset 4px 0 0 #18a875 !important;
+}
+
+.employee-select-card.present:hover {
+    border-color: #119269 !important;
+    background: #e4f7ef !important;
+}
+
+.employee-select-card.present .employee-select-name {
+    color: #117a57 !important;
+}
+
+.employee-select-card.present .employee-select-unit {
+    color: #5c8f7b !important;
+}
+
+/* Dipilih pada Edit Rekap = tidak masuk / absen */
+.employee-select-card.selected {
+    border-color: #dc3545 !important;
+    background: #fff0f1 !important;
+    color: #c62838 !important;
+    box-shadow: inset 4px 0 0 #dc3545 !important;
+}
+
+.employee-select-card.selected:hover {
+    border-color: #c82d3c !important;
+    background: #ffe7e9 !important;
+}
+
+.employee-select-card.selected .employee-select-name {
+    color: #c62838 !important;
+}
+
+.employee-select-card.selected .employee-select-unit {
+    color: #b94b56 !important;
+}
+/* SOFT EDIT STATUS COLORS */
+
+.employee-select-card.present {
+    background: #ffffff !important;
+    border-color: #cfe8dd !important;
+    color: #17212b !important;
+    box-shadow: inset 4px 0 0 #18a875 !important;
+}
+
+.employee-select-card.present:hover {
+    background: #f7fbf9 !important;
+    border-color: #9ed8c2 !important;
+}
+
+.employee-select-card.present .employee-select-name {
+    color: #17212b !important;
+}
+
+.employee-select-card.present .employee-select-unit {
+    color: #7b8794 !important;
+}
+
+.employee-select-card.selected {
+    background: #fffafa !important;
+    border-color: #f0c9ce !important;
+    color: #17212b !important;
+    box-shadow: inset 4px 0 0 #dc3545 !important;
+}
+
+.employee-select-card.selected:hover {
+    background: #fff5f6 !important;
+    border-color: #e6aab2 !important;
+}
+
+.employee-select-card.selected .employee-select-name {
+    color: #17212b !important;
+}
+
+.employee-select-card.selected .employee-select-unit {
+    color: #7b8794 !important;
+}
+/* STRONGER TOP BOTTOM STATUS BORDER */
+
+/* Status normal / masuk */
+.employee-select-card.present {
+    border-width: 1px !important;
+    border-top-width: 2px !important;
+    border-bottom-width: 1px !important;
+    border-left-width: 1px !important;
+    border-right-width: 1px !important;
+
+    border-color: #b9e4d2 !important;
+    border-top-color: #18a875 !important;
+    border-bottom-color: #18a875 !important;
+
+    box-shadow:
+        inset 5px 0 0 #18a875 !important;
+}
+
+/* Status absen */
+.employee-select-card.selected {
+    border-width: 1px !important;
+    border-top-width: 2px !important;
+    border-bottom-width: 1px !important;
+    border-left-width: 1px !important;
+    border-right-width: 1px !important;
+
+    border-color: #efc2c7 !important;
+    border-top-color: #dc3545 !important;
+    border-bottom-color: #dc3545 !important;
+
+    box-shadow:
+        inset 5px 0 0 #dc3545 !important;
+}
+/* STRONG LEFT RIGHT STATUS BORDER */
+
+/* Masuk / normal */
+.employee-select-card.present {
+    border-top-width: 1px !important;
+    border-bottom-width: 1px !important;
+
+    border-left-width: 5px !important;
+    border-right-width: 5px !important;
+
+    border-left-color: #18a875 !important;
+    border-right-color: #18a875 !important;
+
+    border-top-color: #b9e4d2 !important;
+    border-bottom-color: #b9e4d2 !important;
+
+    box-shadow: none !important;
+}
+
+/* Absen */
+.employee-select-card.selected {
+    border-top-width: 1px !important;
+    border-bottom-width: 1px !important;
+
+    border-left-width: 5px !important;
+    border-right-width: 5px !important;
+
+    border-left-color: #dc3545 !important;
+    border-right-color: #dc3545 !important;
+
+    border-top-color: #efc2c7 !important;
+    border-bottom-color: #efc2c7 !important;
+
+    box-shadow: none !important;
+}

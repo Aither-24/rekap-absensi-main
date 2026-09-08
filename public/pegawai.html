@@ -10,8 +10,39 @@
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand"><div class="brand-mark">RA</div><div><p class="brand-title">Rekap Absensi</p><p class="brand-subtitle">Sistem rekap keterlambatan</p></div></div>
-      <nav class="nav"><p class="nav-label">Menu Utama</p><a class="nav-link" href="/"><span class="nav-icon">D</span>Dashboard</a><a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">H</span>Rekap Harian</a>
-        <a class="nav-link" href="/rekap-bulanan.html"><span class="nav-icon">B</span>Rekap Bulanan</a><a class="nav-link" href="/tambah-rekap.html"><span class="nav-icon">+</span>Tambah Rekap</a><a class="nav-link" href="/edit-rekap.html"><span class="nav-icon">E</span>Edit Rekap</a><a class="nav-link active" href="/pegawai.html"><span class="nav-icon">P</span>Pegawai</a></nav>
+      <nav class="nav">
+  <p class="nav-label">Menu Utama</p>
+
+  <a class="nav-link" href="/">
+    <span class="nav-icon">&#8962;</span>
+    <span>Dashboard</span>
+  </a>
+
+  <a class="nav-link" href="/rekap-harian.html">
+    <span class="nav-icon">&#128197;</span>
+    <span>Rekap Harian</span>
+  </a>
+
+  <a class="nav-link" href="/rekap-bulanan.html">
+    <span class="nav-icon">&#128202;</span>
+    <span>Rekap Bulanan</span>
+  </a>
+
+  <a class="nav-link" href="/tambah-rekap.html">
+    <span class="nav-icon">&#10133;</span>
+    <span>Tambah Rekap</span>
+  </a>
+
+  <a class="nav-link" href="/edit-rekap.html">
+    <span class="nav-icon">&#9998;</span>
+    <span>Edit Rekap</span>
+  </a>
+
+  <a class="nav-link active" href="/pegawai.html">
+    <span class="nav-icon">&#128101;</span>
+    <span>Pegawai</span>
+  </a>
+</nav>
       <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
     </aside>
     <div class="mobile-overlay" id="mobileOverlay"></div>
@@ -19,11 +50,40 @@
     <main class="main">
       <header class="topbar"><div class="topbar-left"><button class="btn btn-secondary btn-icon menu-button" id="menuButton" aria-label="Buka menu">&#9776;</button><div><p class="eyebrow">Master Data</p><h1 class="page-name">Pegawai</h1></div></div></header>
       <div class="content">
-        <section class="page-heading"><div><h2>Data pegawai</h2><p>Kelola nama dan unit pegawai yang digunakan oleh sistem rekap keterlambatan.</p></div><div class="heading-actions"><button class="btn btn-secondary" id="backupButton">↓ Backup Database</button><button class="btn btn-primary" id="addEmployeeButton">+ Tambah Pegawai</button></div></section>
+        <section class="page-heading"><div><h2>Data pegawai</h2><p>Kelola nama dan unit pegawai yang digunakan oleh sistem rekap keterlambatan.</p></div><div class="heading-actions"><button class="btn btn-secondary" id="backupButton">Backup Database</button><button class="btn btn-primary" id="addEmployeeButton">+ Tambah Pegawai</button></div></section>
 
         <section class="card">
           <div class="card-header"><div><h3 class="card-title">Daftar Pegawai</h3><p class="card-subtitle" id="employeeSummary">Memuat data...</p></div><input class="input search-input" id="employeeSearch" type="search" placeholder="Cari nama atau unit..."></div>
           <div class="table-wrap" id="employeeTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Unit</th><th>Total Riwayat</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
+          <div class="pagination-wrapper hidden" id="employeePagination">
+            <p class="pagination-info" id="paginationInfo">
+              Menampilkan 0 pegawai
+            </p>
+
+            <div class="pagination-controls">
+              <button
+                class="pagination-nav-button"
+                id="prevPageButton"
+                type="button"
+              >
+                Sebelumnya
+              </button>
+
+              <div
+                class="pagination-pages"
+                id="paginationPages"
+              ></div>
+
+              <button
+                class="pagination-nav-button"
+                id="nextPageButton"
+                type="button"
+              >
+                Berikutnya
+              </button>
+            </div>
+          </div>
+
           <div class="empty-state hidden" id="employeeEmpty"><div class="empty-icon">P</div><h3>Belum ada pegawai</h3><p>Tambahkan pegawai baru untuk mulai mengelola master data.</p></div>
         </section>
       </div>
