@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Rekap - Rekap Absensi</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">RA</div><div><p class="brand-title">Rekap Absensi</p><p class="brand-subtitle">Sistem rekap keterlambatan</p></div></div>
+      <nav class="nav"><p class="nav-label">Menu Utama</p><a class="nav-link" href="/"><span class="nav-icon">D</span>Dashboard</a><a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">H</span>Rekap Harian</a>
+        <a class="nav-link" href="/rekap-bulanan.html"><span class="nav-icon">B</span>Rekap Bulanan</a><a class="nav-link" href="/tambah-rekap.html"><span class="nav-icon">+</span>Tambah Rekap</a><a class="nav-link active" href="/edit-rekap.html"><span class="nav-icon">E</span>Edit Rekap</a><a class="nav-link" href="/pegawai.html"><span class="nav-icon">P</span>Pegawai</a></nav>
+      <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
+    </aside>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <main class="main">
+      <header class="topbar"><div class="topbar-left"><button class="btn btn-secondary btn-icon menu-button" id="menuButton" aria-label="Buka menu">&#9776;</button><div><p class="eyebrow">Koreksi Data</p><h1 class="page-name">Edit Rekap</h1></div></div></header>
+      <div class="content">
+        <section class="page-heading"><div><h2>Koreksi rekap tanggal tertentu</h2><p>Ambil data berdasarkan tanggal, ubah daftar pegawai, lalu simpan. Penyimpanan akan mengganti daftar keterlambatan pada tanggal tersebut.</p></div></section>
+
+        <section class="card">
+          <div class="card-body">
+            <div class="toolbar"><div class="field grow"><label for="editDate">Tanggal rekap</label><input class="input" type="date" id="editDate"></div><button class="btn btn-primary" id="loadEditButton" type="button">Ambil Data</button></div>
+          </div>
+        </section>
+
+        <section class="card hidden" id="editCard">
+          <div class="card-header"><div><h3 class="card-title" id="editTitle">Edit daftar pegawai</h3><p class="card-subtitle">Hapus atau tambahkan nama sesuai koreksi yang diperlukan.</p></div><span class="count-badge" id="editCount">0 pegawai</span></div>
+          <div class="card-body">
+            <div class="field"><label for="editNames">Daftar nama pegawai</label><textarea class="textarea" id="editNames"></textarea><p class="help">Mengosongkan seluruh daftar akan menghapus semua catatan keterlambatan pada tanggal tersebut.</p></div>
+            <div class="notice notice-warning" style="margin-top:14px">Perubahan di halaman ini mengganti seluruh daftar rekap pada tanggal yang dipilih. Pastikan data sudah benar sebelum menyimpan.</div>
+            <div class="notice notice-danger hidden" id="editErrorBox" style="margin-top:14px"><span id="editErrorText"></span></div>
+            <div class="form-actions"><a href="/rekap-harian.html" class="btn btn-secondary">Batal</a><button class="btn btn-primary" id="saveEditButton" type="button">Simpan Perubahan</button></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/edit-rekap.js"></script>
+</body>
+</html>

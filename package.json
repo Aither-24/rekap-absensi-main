@@ -1,0 +1,31 @@
+{
+  "name": "rekap-absensi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "npm run build && node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/node": "^26.4.0",
+    "@types/sql.js": "^1.4.11",
+    "concurrently": "^10.0.5",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.12",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "sql.js": "^1.14.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "@parcel/watcher@2.5.1": true
+  }
+}

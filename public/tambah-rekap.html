@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Rekap - Rekap Absensi</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">RA</div><div><p class="brand-title">Rekap Absensi</p><p class="brand-subtitle">Sistem rekap keterlambatan</p></div></div>
+      <nav class="nav"><p class="nav-label">Menu Utama</p><a class="nav-link" href="/"><span class="nav-icon">D</span>Dashboard</a><a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">H</span>Rekap Harian</a>
+        <a class="nav-link" href="/rekap-bulanan.html"><span class="nav-icon">B</span>Rekap Bulanan</a><a class="nav-link active" href="/tambah-rekap.html"><span class="nav-icon">+</span>Tambah Rekap</a><a class="nav-link" href="/edit-rekap.html"><span class="nav-icon">E</span>Edit Rekap</a><a class="nav-link" href="/pegawai.html"><span class="nav-icon">P</span>Pegawai</a></nav>
+      <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
+    </aside>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <main class="main">
+      <header class="topbar"><div class="topbar-left"><button class="btn btn-secondary btn-icon menu-button" id="menuButton" aria-label="Buka menu">&#9776;</button><div><p class="eyebrow">Input Data</p><h1 class="page-name">Tambah Rekap</h1></div></div></header>
+      <div class="content">
+        <section class="page-heading"><div><h2>Tambah data keterlambatan</h2><p>Masukkan tanggal dan daftar nama pegawai. Satu nama ditulis pada satu baris; nomor urut di awal baris akan dihapus otomatis.</p></div></section>
+
+        <section class="card">
+          <form id="attendanceForm">
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="field"><label for="attendanceDate">Tanggal keterlambatan</label><input class="input" id="attendanceDate" type="date" required><p class="help">Tanggal hari ini dipilih otomatis.</p></div>
+                <div class="field"><label>Ringkasan input</label><div class="notice notice-info" id="previewBox"><span id="previewText">Belum ada nama pegawai.</span></div></div>
+                <div class="field field-full"><label for="employeeNames">Daftar nama pegawai</label><textarea class="textarea" id="employeeNames" placeholder="Contoh:&#10;1. Ahmad&#10;2. Budi&#10;3. Citra" required></textarea><p class="help">Nama yang sama pada input yang sama hanya akan diproses satu kali.</p></div>
+              </div>
+              <div class="notice notice-danger hidden" id="errorBox" style="margin-top:16px"><span id="errorText"></span></div>
+              <div class="form-actions"><a href="/" class="btn btn-secondary">Batal</a><button class="btn btn-primary" type="submit" id="submitButton">Simpan Rekap</button></div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/tambah-rekap.js"></script>
+</body>
+</html>

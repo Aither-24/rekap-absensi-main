@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Bulanan - Rekap Absensi</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-mark">RA</div><div><p class="brand-title">Rekap Absensi</p><p class="brand-subtitle">Sistem rekap keterlambatan</p></div></div>
+    <nav class="nav"><p class="nav-label">Menu Utama</p>
+      <a class="nav-link" href="/"><span class="nav-icon">D</span>Dashboard</a>
+      <a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">H</span>Rekap Harian</a>
+      <a class="nav-link active" href="/rekap-bulanan.html"><span class="nav-icon">B</span>Rekap Bulanan</a>
+      <a class="nav-link" href="/tambah-rekap.html"><span class="nav-icon">+</span>Tambah Rekap</a>
+      <a class="nav-link" href="/edit-rekap.html"><span class="nav-icon">E</span>Edit Rekap</a>
+      <a class="nav-link" href="/pegawai.html"><span class="nav-icon">P</span>Pegawai</a>
+    </nav>
+    <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
+  </aside><div class="mobile-overlay" id="mobileOverlay"></div>
+  <main class="main">
+    <header class="topbar"><div class="topbar-left"><button class="btn btn-secondary btn-icon menu-button" id="menuButton">&#9776;</button><div><p class="eyebrow">Rekap</p><h1 class="page-name">Rekap Bulanan</h1></div></div></header>
+    <div class="content">
+      <section class="page-heading"><div><h2>Rekap Keterlambatan Bulanan</h2><p>Pilih bulan untuk melihat ringkasan seluruh pegawai, tanggal keterlambatan, dan mengekspor data ke Excel.</p></div></section>
+      <section class="card"><div class="card-body"><div class="toolbar"><div class="field"><label for="monthInput">Bulan Rekap</label><input class="input" type="month" id="monthInput"></div><button class="btn btn-primary" id="showButton">Tampilkan</button><button class="btn btn-secondary" id="exportButton">↓ Export Excel</button></div></div></section>
+      <section class="stats-grid monthly-stats">
+        <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Pegawai</p><span class="stat-badge">P</span></div><p class="stat-value" id="monthlyEmployeeCount">-</p><p class="stat-note">Termasuk pegawai tanpa keterlambatan</p></article>
+        <article class="stat-card"><div class="stat-top"><p class="stat-label">Pernah Terlambat</p><span class="stat-badge">T</span></div><p class="stat-value" id="monthlyLateEmployeeCount">-</p><p class="stat-note">Pegawai dengan minimal satu catatan</p></article>
+        <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Kejadian</p><span class="stat-badge">Σ</span></div><p class="stat-value" id="monthlyTotalLate">-</p><p class="stat-note">Akumulasi keterlambatan pada bulan dipilih</p></article>
+      </section>
+      <section class="card" id="monthlyResult"><div class="card-header"><div><h3 class="card-title" id="resultTitle">Rekap Bulanan</h3><p class="card-subtitle">Diurutkan dari jumlah keterlambatan terbanyak. Pegawai tanpa keterlambatan tetap ditampilkan.</p></div></div>
+        <div class="table-wrap" id="monthlyTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Unit</th><th>Total</th><th>Tanggal Keterlambatan</th><th>Aksi</th></tr></thead><tbody id="monthlyTableBody"></tbody></table></div>
+        <div class="empty-state hidden" id="monthlyEmpty"><div class="empty-icon">0</div><h3>Belum ada pegawai</h3><p>Tambahkan data pegawai terlebih dahulu untuk membuat rekap bulanan.</p></div>
+      </section>
+    </div>
+  </main>
+</div>
+<script type="module" src="/rekap-bulanan.js"></script>
+</body></html>
