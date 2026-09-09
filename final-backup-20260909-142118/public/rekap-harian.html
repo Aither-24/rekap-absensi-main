@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rekap Harian - Rekap Absensi</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+
+      <div class="brand">
+
+        <div>
+          <p class="brand-title">Attendly</p>
+          <p class="brand-subtitle">Puskesmas Krembangan Selatan</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+
+        <p class="nav-label">Menu Utama</p>
+
+        <a class="nav-link" href="/">
+          <span class="nav-icon">&#8962;</span>Dashboard
+        </a>
+
+        <a class="nav-link active" href="/rekap-harian.html">
+          <span class="nav-icon">&#128197;</span>Rekap Harian
+        </a>
+
+        <a class="nav-link" href="/rekap-bulanan.html">
+          <span class="nav-icon">&#128202;</span>Rekap Bulanan
+        </a>
+
+        <a class="nav-link" href="/tambah-rekap.html">
+          <span class="nav-icon">&#10133;</span>Tambah Rekap
+        </a>
+
+        <a class="nav-link" href="/edit-rekap.html">
+          <span class="nav-icon">&#9998;</span>Edit Rekap
+        </a>
+
+        <a class="nav-link" href="/pegawai.html">
+          <span class="nav-icon">&#128101;</span>Pegawai
+        </a>
+
+      </nav>
+
+    </aside>
+
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <main class="main">
+
+      <header class="topbar">
+
+        <div class="topbar-left">
+          <div>
+            <p class="eyebrow">Rekap</p>
+            <h1 class="page-name">Rekap Harian</h1>
+          </div>
+        </div>
+
+      </header>
+
+      <div class="content">
+
+        <section class="page-heading">
+          <div>
+            <h2>Rekap pegawai absen</h2>
+
+            <p>
+              Pilih tanggal untuk membuat teks rekap yang siap disalin.
+            </p>
+          </div>
+        </section>
+
+        <section class="card">
+
+          <div class="card-body">
+
+            <div class="toolbar">
+
+              <div class="field grow">
+                <label for="attendanceDate">
+                  Tanggal
+                </label>
+
+                <input
+                  class="input"
+                  id="attendanceDate"
+                  type="date"
+                >
+              </div>
+
+              <button
+                class="btn btn-primary"
+                id="showReportButton"
+                type="button"
+              >
+                Tampilkan
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <section
+          class="card hidden"
+          id="resultBox"
+        >
+
+          <div class="card-header">
+
+            <div>
+              <h3 class="card-title">
+                Teks Rekap Harian
+              </h3>
+
+              <p
+                class="card-subtitle"
+                id="resultSummary"
+              ></p>
+            </div>
+
+            <button
+              class="btn btn-primary"
+              id="copyReportButton"
+              type="button"
+            >
+              Copy Teks
+            </button>
+
+          </div>
+
+          <div class="card-body">
+
+            <textarea
+              class="daily-copy-text"
+              id="dailyReportText"
+              readonly
+            ></textarea>
+
+          </div>
+
+        </section>
+
+        <section
+          class="empty-state hidden"
+          id="emptyBox"
+        >
+          <h3>Tidak ada data absen</h3>
+          <p>
+            Tidak ditemukan catatan pegawai pada tanggal tersebut.
+          </p>
+        </section>
+
+        <div
+          class="notice notice-danger hidden"
+          id="errorBox"
+        >
+          <span id="errorText"></span>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <script
+    type="module"
+    src="/rekap-harian.js"
+  ></script>
+
+</body>
+</html>

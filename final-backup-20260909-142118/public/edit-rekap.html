@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Rekap - Rekap Absensi</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+
+        <div>
+          <p class="brand-title">Attendly</p>
+          <p class="brand-subtitle">Puskesmas Krembangan Selatan</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <p class="nav-label">Menu Utama</p>
+
+        <a class="nav-link" href="/">
+          <span class="nav-icon">&#8962;</span>Dashboard
+        </a>
+
+        <a class="nav-link" href="/rekap-harian.html">
+          <span class="nav-icon">&#128197;</span>Rekap Harian
+        </a>
+
+        <a class="nav-link" href="/rekap-bulanan.html">
+          <span class="nav-icon">&#128202;</span>Rekap Bulanan
+        </a>
+
+        <a class="nav-link" href="/tambah-rekap.html">
+          <span class="nav-icon">&#10133;</span>Tambah Rekap
+        </a>
+
+        <a class="nav-link active" href="/edit-rekap.html">
+          <span class="nav-icon">&#9998;</span>Edit Rekap
+        </a>
+
+        <a class="nav-link" href="/pegawai.html">
+          <span class="nav-icon">&#128101;</span>Pegawai
+        </a>
+      </nav>
+    </aside>
+
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <main class="main">
+
+      <header class="topbar">
+        <div class="topbar-left">
+          <div>
+            <p class="eyebrow">Koreksi Data</p>
+            <h1 class="page-name">Edit Rekap</h1>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <section class="page-heading">
+          <div>
+            <h2>Edit pegawai absen</h2>
+            <p>
+              Pilih tanggal lalu koreksi status hari dan pegawai.
+              Hijau berarti masuk, merah berarti absen, dan Hari Libur menonaktifkan daftar pegawai.
+            </p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-body">
+
+            <div class="toolbar">
+
+              <div class="field grow">
+                <label for="editDate">
+                  Tanggal rekap
+                </label>
+
+                <input
+                  class="input"
+                  type="date"
+                  id="editDate"
+                >
+              </div>
+
+              <button
+                class="btn btn-primary"
+                id="loadEditButton"
+                type="button"
+              >
+                Ambil Data
+              </button>
+
+            </div>
+
+          </div>
+        </section>
+
+        <section
+          class="card hidden"
+          id="editCard"
+        >
+
+          <div class="card-header">
+
+            <div>
+              <h3
+                class="card-title"
+                id="editTitle"
+              >
+                Edit Rekap
+              </h3>
+
+              <p class="card-subtitle">
+                Klik nama untuk menambah atau menghapus status absen.
+              </p>
+            </div>
+
+            <span
+              class="count-badge"
+              id="editCount"
+            >
+              0 pegawai
+            </span>
+
+          </div>
+
+          <div class="card-body">
+
+            <div class="day-status-editor">
+              <div>
+                <span class="selection-summary-label">Status tanggal</span>
+                <strong id="editDayStatusLabel">Belum direkap</strong>
+              </div>
+              <div class="day-status-actions">
+                <button class="btn btn-status-workday" id="setWorkdayButton" type="button">Hari Kerja</button>
+                <button class="btn btn-holiday" id="setHolidayButton" type="button">Hari Libur</button>
+              </div>
+            </div>
+
+            <div class="selection-toolbar">
+
+              <input
+                class="input employee-filter-input"
+                id="editEmployeeSearch"
+                type="search"
+                placeholder="Cari nama pegawai..."
+              >
+
+              <button
+                class="btn btn-secondary"
+                id="clearEditSelectionButton"
+                type="button"
+              >
+                Bersihkan Pilihan
+              </button>
+
+            </div>
+
+            <div
+              class="employee-selection-grid"
+              id="editEmployeeGrid"
+            ></div>
+
+            <div
+              class="notice notice-danger hidden"
+              id="editErrorBox"
+              style="margin-top:16px"
+            >
+              <span id="editErrorText"></span>
+            </div>
+
+            <div class="form-actions">
+
+              <a
+                href="/rekap-harian.html"
+                class="btn btn-secondary"
+              >
+                Batal
+              </a>
+
+              <button
+                class="btn btn-primary"
+                id="saveEditButton"
+                type="button"
+              >
+                Simpan Perubahan
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script
+    type="module"
+    src="/edit-rekap.js"
+  ></script>
+
+</body>
+</html>

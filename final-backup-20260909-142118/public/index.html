@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Rekap Absensi</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div><p class="brand-title">Attendly</p><p class="brand-subtitle">Puskesmas Krembangan Selatan</p></div></div>
+      <nav class="nav">
+        <p class="nav-label">Menu Utama</p>
+        <a class="nav-link active" href="/"><span class="nav-icon">&#8962;</span>Dashboard</a>
+        <a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">&#128197;</span>Rekap Harian</a>
+        <a class="nav-link" href="/rekap-bulanan.html"><span class="nav-icon">&#128202;</span>Rekap Bulanan</a>
+        <a class="nav-link" href="/tambah-rekap.html"><span class="nav-icon">&#10133;</span>Tambah Rekap</a>
+        <a class="nav-link" href="/edit-rekap.html"><span class="nav-icon">&#9998;</span>Edit Rekap</a>
+        <a class="nav-link" href="/pegawai.html"><span class="nav-icon">&#128101;</span>Pegawai</a>
+      </nav>
+      <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
+    </aside>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn btn-secondary btn-icon menu-button" id="menuButton" aria-label="Buka menu">&#9776;</button>
+          <div><p class="eyebrow">Dashboard</p><h1 class="page-name">Rekap Absensi</h1></div>
+        </div>
+        <div class="topbar-actions"><button class="btn btn-secondary" id="refreshButton">&#8635; <span class="label">Refresh</span></button></div>
+      </header>
+
+      <div class="content">
+        <section class="page-heading">
+          <div><h2 id="monthTitle">Memuat data...</h2><p>Ringkasan keterlambatan bulan berjalan. Detail lengkap tetap tersedia melalui rekap harian dan rekap bulanan.</p></div>
+          <div class="heading-actions"><a class="btn btn-primary" href="/tambah-rekap.html">+ Tambah Rekap</a></div>
+        </section>
+
+        <section class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Pegawai</p><span class="stat-badge">P</span></div><p class="stat-value" id="employeeCount">-</p><p class="stat-note">Pegawai terdaftar dalam sistem</p></article>
+          <article class="stat-card"><div class="stat-top"><p class="stat-label">Pegawai Terlambat</p><span class="stat-badge">T</span></div><p class="stat-value" id="lateEmployeeCount">-</p><p class="stat-note">Pegawai dengan catatan bulan ini</p></article>
+          <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Keterlambatan</p><button class="icon-action eye-action" id="viewAllLateButton" type="button" aria-label="Lihat semua hari keterlambatan" title="Lihat semua hari keterlambatan">&#128065;</button></div><p class="stat-value" id="totalLate">-</p><p class="stat-note">Akumulasi kejadian bulan berjalan</p></article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="card">
+            <div class="card-header"><div><h3 class="card-title">Grafik Keterlambatan</h3><p class="card-subtitle">Jumlah pegawai terlambat pada setiap tanggal di bulan berjalan.</p></div></div>
+            <div class="card-body"><div id="lateChart" class="chart-area"></div><div class="empty-state hidden" id="chartEmpty"><div class="empty-icon">0</div><h3>Belum ada data grafik</h3><p>Grafik akan tampil setelah ada data keterlambatan bulan ini.</p></div></div>
+          </article>
+
+          <article class="card">
+            <div class="card-header"><div><h3 class="card-title">Keterlambatan Terbaru</h3><p class="card-subtitle">Hanya menampilkan 3 tanggal keterlambatan terakhir.</p></div><button class="btn btn-eye btn-sm" id="viewAllDaysButton" type="button">&#128065; Lihat Semua</button></div>
+            <div id="recentDaysList" class="recent-list"></div>
+            <div class="empty-state hidden" id="recentEmpty"><div class="empty-icon">0</div><h3>Belum ada keterlambatan</h3><p>Data terbaru akan muncul di bagian ini.</p></div>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="card-header"><div><h3 class="card-title">Peringkat Keterlambatan Bulan Berjalan</h3><p class="card-subtitle">Ringkasan pegawai yang memiliki catatan keterlambatan pada bulan ini.</p></div><a class="btn btn-secondary btn-sm" href="/rekap-bulanan.html">Buka Rekap Bulanan</a></div>
+          <div class="table-wrap" id="dashboardTableWrap">
+            <table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Total</th><th>3 Tanggal Terakhir</th><th></th></tr></thead><tbody id="dashboardTableBody"></tbody></table>
+          </div>
+          <div class="empty-state hidden" id="dashboardEmpty"><div class="empty-icon">0</div><h3>Belum ada data keterlambatan</h3><p>Data bulan berjalan akan tampil di sini setelah rekap ditambahkan.</p></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/dashboard.js"></script>
+</body>
+</html>
