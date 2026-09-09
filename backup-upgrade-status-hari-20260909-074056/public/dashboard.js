@@ -24,21 +24,14 @@ function openDaysModal() {
   modal.className = "modal modal-wide";
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
-  modal.innerHTML = `<div class="modal-header modal-title-row"><div><h3>Daftar Status Hari</h3><p>${dashboardData.month}</p></div><button class="icon-action" data-close aria-label="Tutup">&#10005;</button></div><div class="modal-body modal-scroll"><div class="day-detail-list"></div></div><div class="modal-actions"><a class="btn btn-secondary" href="/rekap-bulanan.html">Rekap Bulanan</a><button class="btn btn-primary" data-close>Tutup</button></div>`;
+  modal.innerHTML = `<div class="modal-header modal-title-row"><div><h3>Daftar Hari Keterlambatan</h3><p>${dashboardData.month}</p></div><button class="icon-action" data-close aria-label="Tutup">&#10005;</button></div><div class="modal-body modal-scroll"><div class="day-detail-list"></div></div><div class="modal-actions"><a class="btn btn-secondary" href="/rekap-bulanan.html">Rekap Bulanan</a><button class="btn btn-primary" data-close>Tutup</button></div>`;
   const list = modal.querySelector(".day-detail-list");
   dashboardData.dailySummaries.forEach((item) => {
     const block = document.createElement("article");
-    block.className = `day-detail-item ${item.status === "HOLIDAY" ? "is-holiday" : ""}`;
-    const description = item.status === "HOLIDAY"
-      ? "Hari Libur"
-      : `${item.total} pegawai absen`;
-    block.innerHTML = `<div><strong>${formatDateIndonesia(item.date, true)}</strong><span>${description}</span></div><div class="name-list"></div><a class="btn btn-secondary btn-sm" href="/rekap-harian.html?date=${encodeURIComponent(item.date)}">Buka Rekap Harian</a>`;
+    block.className = "day-detail-item";
+    block.innerHTML = `<div><strong>${formatDateIndonesia(item.date, true)}</strong><span>${item.total} pegawai terlambat</span></div><div class="name-list"></div><a class="btn btn-secondary btn-sm" href="/rekap-harian.html?date=${encodeURIComponent(item.date)}">Buka Rekap Harian</a>`;
     const names = block.querySelector(".name-list");
-    if (item.status === "HOLIDAY") {
-      names.textContent = "Tidak ada rekap pegawai pada hari libur.";
-    } else {
-      item.names.forEach((name) => { const span = document.createElement("span"); span.className = "chip"; span.textContent = name; names.appendChild(span); });
-    }
+    item.names.forEach((name) => { const span = document.createElement("span"); span.className = "chip"; span.textContent = name; names.appendChild(span); });
     list.appendChild(block);
   });
   backdrop.appendChild(modal);
@@ -51,50 +44,34 @@ function openDaysModal() {
 function renderChart(items, referenceDate) {
   chart.innerHTML = "";
 
+  // Sumbu X selalu mewakili seluruh tanggal dalam bulan berjalan.
+  // Contoh: Februari 28/29 titik, April 30 titik, Maret 31 titik.
   const reference = /^\d{4}-\d{2}-\d{2}$/.test(referenceDate || "")
     ? referenceDate
     : new Date().toISOString().slice(0, 10);
   const [year, month] = reference.split("-").map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
-  const byDate = new Map((items || []).map((item) => [item.date, item]));
-  const max = Math.max(...(items || []).map((item) => Number(item.total) || 0), 1);
+  const totalsByDate = new Map((items || []).map((item) => [item.date, Number(item.total) || 0]));
+  const fullMonth = Array.from({ length: daysInMonth }, (_, index) => {
+    const day = index + 1;
+    const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return { date, total: totalsByDate.get(date) || 0 };
+  });
 
   chart.classList.remove("hidden");
   chartEmpty.classList.add("hidden");
-  chart.style.gridTemplateColumns = `repeat(${daysInMonth}, minmax(0, 1fr))`;
+  const max = Math.max(...fullMonth.map((item) => item.total), 1);
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const item = byDate.get(date);
-    const total = Number(item?.total) || 0;
-    const status = item?.status || null;
-    const height = total === 0 ? 0 : Math.max(10, (total / max) * 100);
+  fullMonth.forEach((item) => {
     const column = document.createElement("div");
     column.className = "chart-column";
-
-    let barClass = "chart-bar";
-    let valueText = String(total);
-    let title = `${formatDateIndonesia(date)}: belum direkap`;
-
-    if (status === "HOLIDAY") {
-      barClass += " is-holiday";
-      valueText = "L";
-      title = `${formatDateIndonesia(date)}: Hari Libur`;
-    } else if (status === "WORKDAY" && total === 0) {
-      barClass += " is-workday-zero";
-      valueText = "0";
-      title = `${formatDateIndonesia(date)}: sudah direkap, 0 pegawai absen`;
-    } else if (status === "WORKDAY") {
-      title = `${formatDateIndonesia(date)}: ${total} pegawai absen`;
-    } else {
-      barClass += " is-unprocessed";
-      valueText = "-";
-    }
-
-    column.innerHTML = `<div class="chart-value">${valueText}</div><div class="chart-bar-wrap"><div class="${barClass}" style="height:${status === "HOLIDAY" ? 18 : height}%"></div></div><div class="chart-label">${day}</div>`;
-    column.title = title;
+    const day = Number(item.date.slice(-2));
+    const height = item.total === 0 ? 0 : Math.max(10, (item.total / max) * 100);
+    const zeroClass = item.total === 0 ? " is-zero" : "";
+    column.innerHTML = `<div class="chart-value">${item.total}</div><div class="chart-bar-wrap"><div class="chart-bar${zeroClass}" style="height:${height}%"></div></div><div class="chart-label">${day}</div>`;
+    column.title = `${formatDateIndonesia(item.date)}: ${item.total} pegawai`;
     chart.appendChild(column);
-  }
+  });
 }
 
 function renderRecent(items) {

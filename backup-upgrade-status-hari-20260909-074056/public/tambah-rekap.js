@@ -25,9 +25,6 @@ const submitButton =
 const clearButton =
   document.getElementById("clearSelectionButton");
 
-const holidayButton =
-  document.getElementById("holidayButton");
-
 const emptyBox =
   document.getElementById("employeeEmpty");
 
@@ -177,27 +174,25 @@ async function checkDateAvailability() {
         `/api/daily?date=${encodeURIComponent(date)}`
       );
 
-    if (data.processed) {
+    if ((data.total || 0) > 0) {
       dateAlreadyFilled = true;
 
       selectedIds.clear();
       updateCount();
       renderEmployees();
 
-      const label = data.status === "HOLIDAY" ? "hari libur" : "rekap hari kerja";
       showError(
-        `Tanggal ini sudah tercatat sebagai ${label}. ` +
-        "Gunakan menu Edit Rekap untuk melakukan perubahan."
+        "Tanggal ini sudah memiliki rekap. " +
+        "Data tidak dapat ditambahkan kembali melalui Tambah Rekap. " +
+        "Gunakan menu Edit Rekap untuk melakukan koreksi."
       );
 
       submitButton.disabled = true;
-      holidayButton.disabled = true;
 
       return false;
     }
 
     submitButton.disabled = false;
-    holidayButton.disabled = false;
 
     return true;
 
@@ -208,7 +203,6 @@ async function checkDateAvailability() {
     );
 
     submitButton.disabled = true;
-    holidayButton.disabled = true;
 
     return false;
 
@@ -243,6 +237,13 @@ async function saveAttendance() {
     return;
   }
 
+  if (names.length === 0) {
+    showError(
+      "Pilih minimal satu pegawai."
+    );
+    return;
+  }
+
   /*
    * Cek ulang sebelum menyimpan.
    * Ini mencegah kondisi ketika tanggal telah diisi
@@ -259,9 +260,9 @@ async function saveAttendance() {
     await confirmDialog({
       title: "Pastikan data sudah sesuai",
       message:
-        names.length > 0
-          ? `${names.length} pegawai akan dicatat absen pada ${formatDateIndonesia(date)}. Apakah data sudah sesuai?`
-          : `${formatDateIndonesia(date)} akan disimpan sebagai hari kerja dengan 0 pegawai absen. Apakah data sudah sesuai?`,
+        `${names.length} pegawai akan dicatat absen pada ` +
+        `${formatDateIndonesia(date)}. ` +
+        `Apakah data sudah sesuai?`,
       confirmText: "Ya, Simpan",
       danger: false,
     });
@@ -277,39 +278,30 @@ async function saveAttendance() {
   );
 
   try {
-    if (names.length === 0) {
-      await apiFetch("/api/day-status", {
-        method: "POST",
-        body: JSON.stringify({ date, status: "WORKDAY" }),
-      });
-      showToast("Hari kerja berhasil direkap dengan 0 pegawai absen.");
-    } else {
-      const result =
-        await apiFetch(
-          "/api/attendance",
-          {
-            method: "POST",
-            body: JSON.stringify({
-              attendanceDate: date,
-              employeeNames: names,
-            }),
-          }
-        );
-
-      const duplicateText =
-        result.duplicateCount
-          ? ` ${result.duplicateCount} data sebelumnya dilewati.`
-          : "";
-
-      showToast(
-        `${result.addedCount} data berhasil disimpan.${duplicateText}`
+    const result =
+      await apiFetch(
+        "/api/attendance",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            attendanceDate: date,
+            employeeNames: names,
+          }),
+        }
       );
-    }
+
+    const duplicateText =
+      result.duplicateCount
+        ? ` ${result.duplicateCount} data sebelumnya dilewati.`
+        : "";
+
+    showToast(
+      `${result.addedCount} data berhasil disimpan.${duplicateText}`
+    );
 
     selectedIds.clear();
     updateCount();
     renderEmployees();
-    await checkDateAvailability();
 
   } catch (error) {
     showError(
@@ -324,47 +316,6 @@ async function saveAttendance() {
     );
   }
 }
-
-async function markHoliday() {
-  hideError();
-
-  const date = dateInput.value;
-  if (!date) {
-    showError("Tanggal wajib dipilih.");
-    return;
-  }
-
-  const available = await checkDateAvailability();
-  if (!available) return;
-
-  const confirmed = await confirmDialog({
-    title: "Tandai hari libur?",
-    message: `${formatDateIndonesia(date)} akan ditandai sebagai hari libur. Tidak ada data pegawai absen yang dicatat pada tanggal ini.`,
-    confirmText: "Ya, Tandai Libur",
-    danger: false,
-  });
-
-  if (!confirmed) return;
-
-  setButtonLoading(holidayButton, true, "Menyimpan...");
-  try {
-    await apiFetch("/api/day-status", {
-      method: "POST",
-      body: JSON.stringify({ date, status: "HOLIDAY" }),
-    });
-    selectedIds.clear();
-    updateCount();
-    renderEmployees();
-    showToast("Tanggal berhasil ditandai sebagai hari libur.");
-    await checkDateAvailability();
-  } catch (error) {
-    showError(error.message || "Gagal menandai hari libur.");
-  } finally {
-    setButtonLoading(holidayButton, false);
-  }
-}
-
-holidayButton.addEventListener("click", markHoliday);
 
 dateInput.addEventListener(
   "change",

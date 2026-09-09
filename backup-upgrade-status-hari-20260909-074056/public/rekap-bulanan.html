@@ -7,7 +7,7 @@
 <body>
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
-    <div class="brand"><div><p class="brand-title">Attendly</p><p class="brand-subtitle">Puskesmas Krembangan Selatan</p></div></div>
+    <div class="brand"><div class="brand-mark">RA</div><div><p class="brand-title">Rekap Absensi</p><p class="brand-subtitle">Sistem rekap keterlambatan</p></div></div>
     <nav class="nav"><p class="nav-label">Menu Utama</p>
       <a class="nav-link" href="/"><span class="nav-icon">&#8962;</span>Dashboard</a>
       <a class="nav-link" href="/rekap-harian.html"><span class="nav-icon">&#128197;</span>Rekap Harian</a>
@@ -27,8 +27,6 @@
         <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Pegawai</p><span class="stat-badge">P</span></div><p class="stat-value" id="monthlyEmployeeCount">-</p><p class="stat-note">Termasuk pegawai tanpa keterlambatan</p></article>
         <article class="stat-card"><div class="stat-top"><p class="stat-label">Pernah Terlambat</p><span class="stat-badge">T</span></div><p class="stat-value" id="monthlyLateEmployeeCount">-</p><p class="stat-note">Pegawai dengan minimal satu catatan</p></article>
         <article class="stat-card"><div class="stat-top"><p class="stat-label">Total Kejadian</p><span class="stat-badge">Σ</span></div><p class="stat-value" id="monthlyTotalLate">-</p><p class="stat-note">Akumulasi keterlambatan pada bulan dipilih</p></article>
-        <article class="stat-card"><div class="stat-top"><p class="stat-label">Hari Direkap</p><span class="stat-badge">✓</span></div><p class="stat-value" id="monthlyWorkdayCount">-</p><p class="stat-note">Hari kerja yang sudah direkap</p></article>
-        <article class="stat-card"><div class="stat-top"><p class="stat-label">Hari Libur</p><span class="stat-badge">L</span></div><p class="stat-value" id="monthlyHolidayCount">-</p><p class="stat-note">Tanggal yang ditandai libur</p></article>
       </section>
       <section class="card" id="monthlyResult"><div class="card-header"><div><h3 class="card-title" id="resultTitle">Rekap Bulanan</h3><p class="card-subtitle">Diurutkan dari jumlah keterlambatan terbanyak. Pegawai tanpa keterlambatan tetap ditampilkan.</p></div></div>
         <div class="table-wrap" id="monthlyTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Unit</th><th>Total</th><th>Tanggal Keterlambatan</th><th>Aksi</th></tr></thead><tbody id="monthlyTableBody"></tbody></table></div>

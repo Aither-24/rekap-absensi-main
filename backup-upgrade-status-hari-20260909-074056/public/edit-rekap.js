@@ -34,15 +34,6 @@ const clearButton =
 const saveButton =
   document.getElementById("saveEditButton");
 
-const dayStatusLabel =
-  document.getElementById("editDayStatusLabel");
-
-const setWorkdayButton =
-  document.getElementById("setWorkdayButton");
-
-const setHolidayButton =
-  document.getElementById("setHolidayButton");
-
 const errorBox =
   document.getElementById("editErrorBox");
 
@@ -51,7 +42,6 @@ const errorText =
 
 let employees = [];
 const selectedIds = new Set();
-let currentDayStatus = null;
 
 dateInput.value = todayLocal();
 
@@ -92,7 +82,6 @@ function renderEmployees() {
 
     button.type = "button";
     button.className = "employee-select-card present";
-    button.disabled = currentDayStatus === "HOLIDAY";
 
     if (selectedIds.has(employee.id)) { button.classList.remove("present"); button.classList.add("selected"); }
 
@@ -120,7 +109,6 @@ function renderEmployees() {
     button.addEventListener(
       "click",
       () => {
-        if (currentDayStatus === "HOLIDAY") return;
 
         if (selectedIds.has(employee.id)) {
           selectedIds.delete(employee.id);
@@ -176,7 +164,6 @@ async function loadData() {
       employeeData.employees || [];
 
     selectedIds.clear();
-    currentDayStatus = dailyData.status;
 
     const selectedNames =
       new Set(
@@ -198,16 +185,6 @@ async function loadData() {
 
     editTitle.textContent =
       `Edit rekap ${formatDateIndonesia(dateInput.value)}`;
-
-    dayStatusLabel.textContent =
-      currentDayStatus === "HOLIDAY"
-        ? "Hari Libur"
-        : currentDayStatus === "WORKDAY"
-          ? "Hari Kerja"
-          : "Belum Direkap";
-
-    setWorkdayButton.classList.toggle("active", currentDayStatus === "WORKDAY");
-    setHolidayButton.classList.toggle("active", currentDayStatus === "HOLIDAY");
 
     updateCount();
     renderEmployees();
@@ -232,15 +209,13 @@ async function saveData() {
   const names =
     getSelectedNames();
 
-  const targetStatus = currentDayStatus === "HOLIDAY" ? "HOLIDAY" : "WORKDAY";
-
   const confirmed =
     await confirmDialog({
       title: "Pastikan perubahan sudah sesuai",
       message:
-        targetStatus === "HOLIDAY"
-          ? `${formatDateIndonesia(dateInput.value)} akan disimpan sebagai hari libur. Semua catatan absen pada tanggal ini akan dikosongkan.`
-          : `${names.length} pegawai akan tercatat absen pada ${formatDateIndonesia(dateInput.value)}. Apakah data sudah sesuai?`,
+        names.length > 0
+          ? `${names.length} pegawai akan tercatat absen pada ${formatDateIndonesia(dateInput.value)}. Apakah data sudah sesuai?`
+          : `Seluruh data absen pada ${formatDateIndonesia(dateInput.value)} akan dihapus. Apakah Anda yakin?`,
       confirmText: "Ya, Simpan",
       danger: names.length === 0,
     });
@@ -262,8 +237,7 @@ async function saveData() {
         method: "PUT",
         body: JSON.stringify({
           date: dateInput.value,
-          employeeNames: targetStatus === "HOLIDAY" ? [] : names,
-          status: targetStatus,
+          employeeNames: names,
         }),
       }
     );
@@ -306,31 +280,6 @@ clearButton.addEventListener(
     renderEmployees();
   }
 );
-
-setWorkdayButton.addEventListener("click", () => {
-  currentDayStatus = "WORKDAY";
-  dayStatusLabel.textContent = "Hari Kerja";
-  setWorkdayButton.classList.add("active");
-  setHolidayButton.classList.remove("active");
-  renderEmployees();
-});
-
-setHolidayButton.addEventListener("click", async () => {
-  const confirmed = await confirmDialog({
-    title: "Ubah menjadi hari libur?",
-    message: "Jika disimpan, seluruh catatan pegawai absen pada tanggal ini akan dihapus.",
-    confirmText: "Tandai Libur",
-    danger: true,
-  });
-  if (!confirmed) return;
-  currentDayStatus = "HOLIDAY";
-  selectedIds.clear();
-  updateCount();
-  dayStatusLabel.textContent = "Hari Libur";
-  setHolidayButton.classList.add("active");
-  setWorkdayButton.classList.remove("active");
-  renderEmployees();
-});
 
 saveButton.addEventListener(
   "click",

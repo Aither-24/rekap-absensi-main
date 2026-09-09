@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Rekap - Rekap Absensi</title>
+  <title>Tambah Rekap - Rekap Absensi</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -12,10 +12,10 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-
+        <div class="brand-mark">RA</div>
         <div>
-          <p class="brand-title">Attendly</p>
-          <p class="brand-subtitle">Puskesmas Krembangan Selatan</p>
+          <p class="brand-title">Rekap Absensi</p>
+          <p class="brand-subtitle">Sistem rekap keterlambatan</p>
         </div>
       </div>
 
@@ -34,11 +34,11 @@
           <span class="nav-icon">&#128202;</span>Rekap Bulanan
         </a>
 
-        <a class="nav-link" href="/tambah-rekap.html">
+        <a class="nav-link active" href="/tambah-rekap.html">
           <span class="nav-icon">&#10133;</span>Tambah Rekap
         </a>
 
-        <a class="nav-link active" href="/edit-rekap.html">
+        <a class="nav-link" href="/edit-rekap.html">
           <span class="nav-icon">&#9998;</span>Edit Rekap
         </a>
 
@@ -55,8 +55,8 @@
       <header class="topbar">
         <div class="topbar-left">
           <div>
-            <p class="eyebrow">Koreksi Data</p>
-            <h1 class="page-name">Edit Rekap</h1>
+            <p class="eyebrow">Input Data</p>
+            <h1 class="page-name">Tambah Rekap</h1>
           </div>
         </div>
       </header>
@@ -65,10 +65,10 @@
 
         <section class="page-heading">
           <div>
-            <h2>Edit pegawai absen</h2>
+            <h2>Tambah data pegawai absen</h2>
             <p>
-              Pilih tanggal lalu koreksi status hari dan pegawai.
-              Hijau berarti masuk, merah berarti absen, dan Hari Libur menonaktifkan daftar pegawai.
+              Pilih tanggal, kemudian klik nama pegawai yang absen.
+              Pegawai yang dipilih akan ditandai dengan warna merah.
             </p>
           </div>
         </section>
@@ -76,87 +76,42 @@
         <section class="card">
           <div class="card-body">
 
-            <div class="toolbar">
+            <div class="attendance-selection-header">
 
-              <div class="field grow">
-                <label for="editDate">
-                  Tanggal rekap
-                </label>
-
+              <div class="field">
+                <label for="attendanceDate">Tanggal</label>
                 <input
                   class="input"
+                  id="attendanceDate"
                   type="date"
-                  id="editDate"
+                  required
                 >
               </div>
 
-              <button
-                class="btn btn-primary"
-                id="loadEditButton"
-                type="button"
-              >
-                Ambil Data
-              </button>
+              <div class="selection-summary">
+                <span class="selection-summary-label">
+                  Pegawai dipilih
+                </span>
 
-            </div>
-
-          </div>
-        </section>
-
-        <section
-          class="card hidden"
-          id="editCard"
-        >
-
-          <div class="card-header">
-
-            <div>
-              <h3
-                class="card-title"
-                id="editTitle"
-              >
-                Edit Rekap
-              </h3>
-
-              <p class="card-subtitle">
-                Klik nama untuk menambah atau menghapus status absen.
-              </p>
-            </div>
-
-            <span
-              class="count-badge"
-              id="editCount"
-            >
-              0 pegawai
-            </span>
-
-          </div>
-
-          <div class="card-body">
-
-            <div class="day-status-editor">
-              <div>
-                <span class="selection-summary-label">Status tanggal</span>
-                <strong id="editDayStatusLabel">Belum direkap</strong>
+                <strong id="selectedCount">
+                  0 pegawai
+                </strong>
               </div>
-              <div class="day-status-actions">
-                <button class="btn btn-status-workday" id="setWorkdayButton" type="button">Hari Kerja</button>
-                <button class="btn btn-holiday" id="setHolidayButton" type="button">Hari Libur</button>
-              </div>
+
             </div>
 
             <div class="selection-toolbar">
 
               <input
                 class="input employee-filter-input"
-                id="editEmployeeSearch"
+                id="employeeSearch"
                 type="search"
                 placeholder="Cari nama pegawai..."
               >
 
               <button
                 class="btn btn-secondary"
-                id="clearEditSelectionButton"
+                id="clearSelectionButton"
                 type="button"
               >
                 Bersihkan Pilihan
@@ -166,21 +121,31 @@
 
             <div
               class="employee-selection-grid"
-              id="editEmployeeGrid"
+              id="employeeSelectionGrid"
             ></div>
 
             <div
+              class="empty-state hidden"
+              id="employeeEmpty"
+            >
+              <h3>Data pegawai tidak ditemukan</h3>
+              <p>
+                Tambahkan pegawai terlebih dahulu melalui menu Pegawai.
+              </p>
+            </div>
+
+            <div
               class="notice notice-danger hidden"
-              id="editErrorBox"
+              id="errorBox"
               style="margin-top:16px"
             >
-              <span id="editErrorText"></span>
+              <span id="errorText"></span>
             </div>
 
             <div class="form-actions">
 
               <a
-                href="/rekap-harian.html"
+                href="/"
                 class="btn btn-secondary"
               >
                 Batal
@@ -188,16 +153,15 @@
 
               <button
                 class="btn btn-primary"
-                id="saveEditButton"
+                id="submitButton"
                 type="button"
               >
-                Simpan Perubahan
+                Simpan Rekap
               </button>
 
             </div>
 
           </div>
-
         </section>
 
       </div>
@@ -207,8 +171,7 @@
 
   <script
     type="module"
-    src="/edit-rekap.js"
+    src="/tambah-rekap.js"
   ></script>
-
 </body>
 </html>

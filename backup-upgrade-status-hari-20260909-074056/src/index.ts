@@ -24,8 +24,6 @@ import {
 } from "./report.js";
 import { isValidDate, isValidMonth } from "./date.js";
 import { createMonthlyWorkbook } from "./xlsx.js";
-import { getDayStatus, getDayStatuses, setDayStatus, type DayStatus } from "./day-status.js";
-import { getCurrentMonthRange } from "./date.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -194,7 +192,7 @@ async function main() {
           totalLate: reports.reduce((sum, report) => sum + report.total, 0),
           reports,
           dailySummaries,
-          recentDays: dailySummaries.filter((item) => item.status === "WORKDAY" && item.total > 0).slice(0, 3),
+          recentDays: dailySummaries.slice(0, 3),
         });
         return;
       }
@@ -221,8 +219,6 @@ async function main() {
           date: report.date,
           names: report.names,
           total: report.names.length,
-          status: report.status,
-          processed: report.status !== null,
         });
         return;
       }
@@ -248,24 +244,14 @@ async function main() {
           return;
         }
 
-        const requestedStatus: DayStatus = body.status === "HOLIDAY" ? "HOLIDAY" : "WORKDAY";
-
-        runInTransaction(db, () => {
-          if (requestedStatus === "HOLIDAY") {
-            setDayStatus(db, date, "HOLIDAY");
-          } else {
-            replaceLateAttendance(db, date, employeeNames);
-            setDayStatus(db, date, "WORKDAY");
-          }
-        });
+        replaceLateAttendance(db, date, employeeNames);
         saveDatabase(db);
 
         sendJson(res, 200, {
           success: true,
           message: "Rekap harian berhasil diperbarui.",
           date,
-          total: requestedStatus === "HOLIDAY" ? 0 : employeeNames.length,
-          status: requestedStatus,
+          total: employeeNames.length,
         });
         return;
       }
@@ -299,9 +285,9 @@ async function main() {
         // Pengamanan:
         // Tambah Rekap hanya boleh digunakan untuk tanggal yang belum pernah diisi.
         // Koreksi tanggal yang sudah ada harus melalui PUT /api/daily (Edit Rekap).
-        const existingStatus = getDayStatus(db, attendanceDate);
+        const existingReport = getDailyReport(db, attendanceDate);
 
-        if (existingStatus !== null) {
+        if (existingReport.names.length > 0) {
           sendJson(res, 409, {
             success: false,
             error:
@@ -318,7 +304,6 @@ async function main() {
             const result = addLateAttendance(db, employeeName, attendanceDate);
             result.added ? addedCount++ : duplicateCount++;
           }
-          setDayStatus(db, attendanceDate, "WORKDAY");
         });
 
         saveDatabase(db);
@@ -360,43 +345,6 @@ async function main() {
           success: true,
           message: `Data ${name} pada ${date} berhasil dihapus.`,
         });
-        return;
-      }
-
-      // ==================================================
-      // STATUS HARI
-      // POST /api/day-status { date, status }
-      // ==================================================
-      if (url.pathname === "/api/day-status" && req.method === "POST") {
-        const body = await parseJsonBody(req);
-        const date = body.date;
-        const status = body.status;
-
-        if (!hasValidDate(date)) {
-          sendJson(res, 400, { success: false, error: "Tanggal tidak valid." });
-          return;
-        }
-
-        if (status !== "WORKDAY" && status !== "HOLIDAY") {
-          sendJson(res, 400, { success: false, error: "Status hari tidak valid." });
-          return;
-        }
-
-        const existing = getDayStatus(db, date);
-        if (existing !== null) {
-          sendJson(res, 409, {
-            success: false,
-            error: "Tanggal tersebut sudah direkap. Gunakan menu Edit Rekap untuk mengubah status hari.",
-          });
-          return;
-        }
-
-        runInTransaction(db, () => {
-          setDayStatus(db, date, status);
-        });
-        saveDatabase(db);
-
-        sendJson(res, 201, { success: true, date, status });
         return;
       }
 
@@ -532,19 +480,14 @@ async function main() {
         const referenceDate = month ? `${month}-01` : undefined;
         const reports = getMonthlyReport(db, referenceDate);
         const dailySummaries = getMonthlyDailySummaries(db, referenceDate);
-        const range = getCurrentMonthRange(referenceDate);
-        const dayStatuses = getDayStatuses(db, range.start, range.end);
         sendJson(res, 200, {
           success: true,
           month: month ?? null,
           employeeCount: reports.length,
           lateEmployeeCount: reports.filter((report) => report.total > 0).length,
           totalLate: reports.reduce((sum, report) => sum + report.total, 0),
-          workdayCount: dayStatuses.filter((item) => item.status === "WORKDAY").length,
-          holidayCount: dayStatuses.filter((item) => item.status === "HOLIDAY").length,
           reports,
           dailySummaries,
-          dayStatuses,
         });
         return;
       }
@@ -563,17 +506,7 @@ async function main() {
         const dailyRows = reports.flatMap((report) =>
           report.dates.map((date) => ({ date, name: report.name, unit: report.unit })),
         ).sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "id-ID"));
-        const range = getCurrentMonthRange(`${month}-01`);
-        const dayStatuses = getDayStatuses(db, range.start, range.end);
-        const dailySummaryMap = new Map(
-          getMonthlyDailySummaries(db, `${month}-01`).map((item) => [item.date, item]),
-        );
-        const statusRows = dayStatuses.map((item) => ({
-          date: item.date,
-          status: item.status,
-          total: dailySummaryMap.get(item.date)?.total ?? 0,
-        }));
-        const workbook = createMonthlyWorkbook(label, reports, dailyRows, statusRows);
+        const workbook = createMonthlyWorkbook(label, reports, dailyRows);
 
         res.writeHead(200, {
           "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

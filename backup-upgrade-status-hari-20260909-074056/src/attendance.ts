@@ -1,4 +1,5 @@
 import type { Database } from "sql.js";
+import { runInTransaction } from "./database.js";
 import { findEmployee, findOrCreateEmployee } from "./employee.js";
 
 export interface AttendanceResult {
@@ -53,14 +54,16 @@ export function replaceLateAttendance(
   date: string,
   names: string[],
 ): void {
-  db.run(`
-    DELETE FROM attendance
-    WHERE attendance_date = '${escapeSql(date)}';
-  `);
+  runInTransaction(db, () => {
+    db.run(`
+      DELETE FROM attendance
+      WHERE attendance_date = '${escapeSql(date)}';
+    `);
 
-  for (const name of names) {
-    addLateAttendance(db, name, date);
-  }
+    for (const name of names) {
+      addLateAttendance(db, name, date);
+    }
+  });
 }
 
 export function deleteLateAttendance(

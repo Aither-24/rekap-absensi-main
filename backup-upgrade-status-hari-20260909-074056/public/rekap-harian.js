@@ -119,19 +119,18 @@ async function loadDailyReport() {
         `/api/daily?date=${encodeURIComponent(date)}`
       );
 
-    if (data.status === "HOLIDAY") {
-      emptyBox.classList.add("hidden");
-      resultBox.classList.remove("hidden");
-      resultSummary.textContent = "Hari Libur";
-      reportText.value = `Hari Libur (${formatShortDate(data.date)})`;
-      reportText.style.height = "220px";
-      return;
-    }
-
     if (!data.names?.length) {
-      resultBox.classList.add("hidden");
-      emptyBox.classList.remove("hidden");
+
+      resultBox.classList.add(
+        "hidden"
+      );
+
+      emptyBox.classList.remove(
+        "hidden"
+      );
+
       reportText.value = "";
+
       return;
     }
 

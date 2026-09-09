@@ -1,6 +1,5 @@
 import type { Database } from "sql.js";
 import { getTodayIndonesia, getCurrentMonthRange } from "./date.js";
-import { getDayStatus, getDayStatuses, type DayStatus } from "./day-status.js";
 
 export interface EmployeeReport {
   employeeId: number;
@@ -94,7 +93,6 @@ export interface DailySummary {
   date: string;
   total: number;
   names: string[];
-  status: DayStatus | null;
 }
 
 export function getMonthlyDailySummaries(
@@ -102,33 +100,33 @@ export function getMonthlyDailySummaries(
   referenceDate: string = getTodayIndonesia(),
 ): DailySummary[] {
   const { start, end } = getCurrentMonthRange(referenceDate);
-  const statuses = getDayStatuses(db, start, end);
+  const result = db.exec(`
+    SELECT a.attendance_date, COUNT(a.id) AS total
+    FROM attendance a
+    WHERE a.attendance_date BETWEEN '${start}' AND '${end}'
+    GROUP BY a.attendance_date
+    ORDER BY a.attendance_date DESC;
+  `);
+  if (result.length === 0 || result[0].values.length === 0) return [];
 
-  return statuses
-    .map(({ date, status }) => {
-      const namesResult = db.exec(`
-        SELECT e.name
-        FROM attendance a
-        INNER JOIN employees e ON e.id = a.employee_id
-        WHERE a.attendance_date = '${escapeSql(date)}'
-        ORDER BY e.name ASC;
-      `);
-
-      const names = namesResult.length > 0
-        ? namesResult[0].values.map((v) => String(v[0]))
-        : [];
-
-      return {
-        date,
-        total: status === "HOLIDAY" ? 0 : names.length,
-        names: status === "HOLIDAY" ? [] : names,
-        status,
-      };
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
+  return result[0].values.map((row) => {
+    const date = String(row[0]);
+    const namesResult = db.exec(`
+      SELECT e.name
+      FROM attendance a
+      INNER JOIN employees e ON e.id = a.employee_id
+      WHERE a.attendance_date = '${escapeSql(date)}'
+      ORDER BY e.name ASC;
+    `);
+    return {
+      date,
+      total: Number(row[1]),
+      names: namesResult.length > 0 ? namesResult[0].values.map((v) => String(v[0])) : [],
+    };
+  });
 }
 
-export interface DailyReport { date: string; names: string[]; status: DayStatus | null; }
+export interface DailyReport { date: string; names: string[]; }
 export function getDailyReport(db: Database, date: string): DailyReport {
   const safeDate = escapeSql(date);
   const result = db.exec(`
@@ -141,7 +139,6 @@ export function getDailyReport(db: Database, date: string): DailyReport {
   return {
     date,
     names: result.length > 0 ? result[0].values.map((row) => String(row[0])) : [],
-    status: getDayStatus(db, date),
   };
 }
 

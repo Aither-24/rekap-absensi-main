@@ -6,8 +6,6 @@ const exportButton = document.getElementById("exportButton");
 const employeeCount = document.getElementById("monthlyEmployeeCount");
 const lateEmployeeCount = document.getElementById("monthlyLateEmployeeCount");
 const totalLate = document.getElementById("monthlyTotalLate");
-const workdayCount = document.getElementById("monthlyWorkdayCount");
-const holidayCount = document.getElementById("monthlyHolidayCount");
 const tableBody = document.getElementById("monthlyTableBody");
 const tableWrap = document.getElementById("monthlyTableWrap");
 const empty = document.getElementById("monthlyEmpty");
@@ -29,7 +27,7 @@ function detailModal(report) {
 }
 
 function render(data) {
-  currentData = data; employeeCount.textContent=data.employeeCount??0; lateEmployeeCount.textContent=data.lateEmployeeCount??0; totalLate.textContent=data.totalLate??0; workdayCount.textContent=data.workdayCount??0; holidayCount.textContent=data.holidayCount??0; resultTitle.textContent=`Rekap ${monthLabel(monthInput.value)}`; tableBody.innerHTML="";
+  currentData = data; employeeCount.textContent=data.employeeCount??0; lateEmployeeCount.textContent=data.lateEmployeeCount??0; totalLate.textContent=data.totalLate??0; resultTitle.textContent=`Rekap ${monthLabel(monthInput.value)}`; tableBody.innerHTML="";
   if (!data.reports?.length) { tableWrap.classList.add("hidden"); empty.classList.remove("hidden"); return; }
   tableWrap.classList.remove("hidden"); empty.classList.add("hidden");
   data.reports.forEach((report,index)=>{
@@ -44,43 +42,3 @@ async function load() { if(!monthInput.value)return; setButtonLoading(showButton
 showButton.addEventListener("click",load);
 exportButton.addEventListener("click",()=>{ if(!monthInput.value)return showToast("Pilih bulan terlebih dahulu.","error"); window.location.href=`/api/monthly/export?month=${encodeURIComponent(monthInput.value)}`; });
 monthInput.value=currentMonth(); load();
-
-/* SUMMARY ICON REPLACEMENT PATCH - LIGHTWEIGHT */
-function applyMonthlySummaryIcons() {
-  const iconMap = [
-    ["Total Pegawai", "\u{1F465}"],
-    ["Pernah Terlambat", "\u23F0"],
-    ["Total Kejadian", "\u{1F4CA}"],
-    ["Hari Direkap", "\u2713"],
-    ["Hari Libur", "\u2600"]
-  ];
-
-  const cards = document.querySelectorAll(
-    ".summary-card, .stat-card, .metric-card"
-  );
-
-  cards.forEach((card) => {
-    const text = card.textContent || "";
-
-    for (const [label, icon] of iconMap) {
-      if (!text.includes(label)) {
-        continue;
-      }
-
-      const iconElement =
-        card.querySelector(
-          ".summary-icon, .stat-icon, .metric-icon, .card-icon"
-        );
-
-      if (iconElement) {
-        iconElement.textContent = icon;
-      }
-
-      break;
-    }
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  applyMonthlySummaryIcons();
-});
