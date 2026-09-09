@@ -15,7 +15,6 @@ import {
   findSimilarEmployees,
   getEmployees,
   updateEmployee,
-  isEmployeeRole,
 } from "./employee.js";
 import {
   getDailyReport,
@@ -452,7 +451,7 @@ async function main() {
           const employee = createEmployee(
             db,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            typeof body.unit === "string" ? body.unit : null,
           );
           saveDatabase(db);
           sendJson(res, 201, {
@@ -485,7 +484,7 @@ async function main() {
             db,
             id,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            typeof body.unit === "string" ? body.unit : null,
           );
           saveDatabase(db);
           sendJson(res, 200, {
@@ -562,7 +561,7 @@ async function main() {
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
         const label = `${monthNames[monthNumber - 1]} ${year}`;
         const dailyRows = reports.flatMap((report) =>
-          report.dates.map((date) => ({ date, name: report.name, role: report.role })),
+          report.dates.map((date) => ({ date, name: report.name, unit: report.unit })),
         ).sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "id-ID"));
         const range = getCurrentMonthRange(`${month}-01`);
         const dayStatuses = getDayStatuses(db, range.start, range.end);

@@ -13,6 +13,16 @@ const tableWrap = document.getElementById("monthlyTableWrap");
 const empty = document.getElementById("monthlyEmpty");
 const resultTitle = document.getElementById("resultTitle");
 let currentData = null;
+function roleLabel(role) {
+  switch (role) {
+    case "PEGAWAI_TETAP": return "Pegawai Tetap";
+    case "PKWT": return "PKWT";
+    case "TENAGA_AHLI": return "Tenaga Ahli";
+    case "MAGANG": return "Magang";
+    default: return "Belum diatur";
+  }
+}
+
 
 function currentMonth() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
 function monthLabel(value) { const [y,m] = value.split("-").map(Number); return new Intl.DateTimeFormat("id-ID", { month:"long", year:"numeric" }).format(new Date(y,m-1,1)); }
@@ -34,7 +44,7 @@ function render(data) {
   tableWrap.classList.remove("hidden"); empty.classList.add("hidden");
   data.reports.forEach((report,index)=>{
     const row=document.createElement("tr"); row.innerHTML=`<td class="cell-number">${index+1}</td><td><span class="employee-name"></span></td><td class="role-cell"></td><td><span class="count-badge ${report.total===0?"count-zero":""}">${report.total}</span></td><td class="dates-cell"></td><td><button class="icon-action eye-action detail-button" type="button" title="Lihat detail" aria-label="Lihat detail">&#128065;</button></td>`;
-    row.querySelector(".employee-name").textContent=report.name; row.querySelector(".role-cell").textContent=({PEGAWAI_TETAP:"Pegawai Tetap",PKWT:"PKWT",TENAGA_AHLI:"Tenaga Ahli",MAGANG:"Magang"}[report.role]||"Belum diatur");
+    row.querySelector(".employee-name").textContent=report.name; row.querySelector(".role-cell").textContent=roleLabel(report.role);
     const dates=document.createElement("div"); dates.className="date-chips"; const visible=report.dates.slice(0,3); visible.forEach(date=>{const chip=document.createElement("span");chip.className="chip";chip.textContent=formatDateIndonesia(date);dates.appendChild(chip);}); if(report.dates.length>3){const more=document.createElement("span");more.className="chip chip-more";more.textContent=`+${report.dates.length-3}`;dates.appendChild(more);} if(!report.dates.length) dates.textContent="-"; row.querySelector(".dates-cell").appendChild(dates);
     row.querySelector(".detail-button").addEventListener("click",()=>detailModal(report)); tableBody.appendChild(row);
   });

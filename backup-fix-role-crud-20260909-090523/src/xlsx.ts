@@ -19,6 +19,17 @@ export interface DayStatusExportRow {
   total: number;
 }
 
+
+function roleLabel(role: string | null): string {
+  switch (role) {
+    case "PEGAWAI_TETAP": return "Pegawai Tetap";
+    case "PKWT": return "PKWT";
+    case "TENAGA_AHLI": return "Tenaga Ahli";
+    case "MAGANG": return "Magang";
+    default: return "Belum diatur";
+  }
+}
+
 function xmlEscape(value: unknown): string {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -139,7 +150,7 @@ export function createMonthlyWorkbook(
     ...reports.map((report, index) => [
       { value: index + 1, numeric: true },
       { value: report.name },
-      { value: report.role || "Belum diatur" },
+      { value: roleLabel(report.role) },
       { value: report.total, numeric: true },
       { value: report.dates.join(", ") || "-" },
     ]),
@@ -152,7 +163,7 @@ export function createMonthlyWorkbook(
       { value: index + 1, numeric: true },
       { value: item.date },
       { value: item.name },
-      { value: item.role || "Belum diatur" },
+      { value: roleLabel(item.role) },
     ]),
   ];
 

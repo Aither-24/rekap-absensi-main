@@ -61,19 +61,18 @@ const nextPageButton =
 
 const PAGE_SIZE = 10;
 
-function getRoleLabel(role) {
-  const labels = {
-    PEGAWAI_TETAP: "Pegawai Tetap",
-    PKWT: "PKWT",
-    TENAGA_AHLI: "Tenaga Ahli",
-    MAGANG: "Magang",
-  };
-  return labels[role] || "Belum diatur";
-}
-
-
 let currentPage = 1;
 let employees = [];
+
+function roleLabel(role) {
+  switch (role) {
+    case "PEGAWAI_TETAP": return "Pegawai Tetap";
+    case "PKWT": return "PKWT";
+    case "TENAGA_AHLI": return "Tenaga Ahli";
+    case "MAGANG": return "Magang";
+    default: return "Belum diatur";
+  }
+}
 
 
 function openModal(employee = null) {
@@ -84,7 +83,9 @@ function openModal(employee = null) {
     employee?.name || "";
 
   employeeRole.value =
-    employee?.role || "";
+    employee && typeof employee.role === "string"
+      ? employee.role
+      : "";
 
   modalTitle.textContent =
     employee
@@ -117,7 +118,7 @@ function getFilteredEmployees() {
       employee.name
         .toLocaleLowerCase("id-ID")
         .includes(query) ||
-      (getRoleLabel(employee.role) || "")
+      roleLabel(employee.role)
         .toLocaleLowerCase("id-ID")
         .includes(query)
   );
@@ -312,7 +313,7 @@ function render() {
       row
         .querySelector(".role")
         .textContent =
-          getRoleLabel(employee.role);
+          roleLabel(employee.role);
 
       row
         .querySelector("[data-edit]")
@@ -606,15 +607,26 @@ form.addEventListener(
     };
 
     if (!payload.name) {
-      errorText.textContent = "Nama pegawai wajib diisi.";
-      errorBox.classList.remove("hidden");
+      errorText.textContent =
+        "Nama pegawai wajib diisi.";
+
+      errorBox.classList.remove(
+        "hidden"
+      );
+
       return;
     }
 
     if (!payload.role) {
-      errorText.textContent = "Role wajib dipilih.";
-      errorBox.classList.remove("hidden");
+      errorText.textContent =
+        "Role wajib dipilih.";
+
+      errorBox.classList.remove(
+        "hidden"
+      );
+
       employeeRole.focus();
+
       return;
     }
 
@@ -642,17 +654,29 @@ form.addEventListener(
       );
 
       await apiFetch(
-        id
-          ? `/api/employees/${id}`
-          : "/api/employees",
-        {
-          method:
-            id ? "PUT" : "POST",
+          id
+            ? `/api/employees/${id}`
+            : "/api/employees",
+          {
+            method:
+              id ? "PUT" : "POST",
 
-          body:
-            JSON.stringify(payload),
-        }
-      );
+            body:
+              JSON.stringify(payload),
+          }
+        );
+
+      /*
+       * Pastikan respons backend memang membawa role.
+       */
+      if (
+        !savedData.employee ||
+        savedData.employee.role !== payload.role
+      ) {
+        throw new Error(
+          "Role pegawai tidak tersimpan dengan benar."
+        );
+      }
 
       showToast(
         id

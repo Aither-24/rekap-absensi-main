@@ -33,8 +33,8 @@ function render(data) {
   if (!data.reports?.length) { tableWrap.classList.add("hidden"); empty.classList.remove("hidden"); return; }
   tableWrap.classList.remove("hidden"); empty.classList.add("hidden");
   data.reports.forEach((report,index)=>{
-    const row=document.createElement("tr"); row.innerHTML=`<td class="cell-number">${index+1}</td><td><span class="employee-name"></span></td><td class="role-cell"></td><td><span class="count-badge ${report.total===0?"count-zero":""}">${report.total}</span></td><td class="dates-cell"></td><td><button class="icon-action eye-action detail-button" type="button" title="Lihat detail" aria-label="Lihat detail">&#128065;</button></td>`;
-    row.querySelector(".employee-name").textContent=report.name; row.querySelector(".role-cell").textContent=({PEGAWAI_TETAP:"Pegawai Tetap",PKWT:"PKWT",TENAGA_AHLI:"Tenaga Ahli",MAGANG:"Magang"}[report.role]||"Belum diatur");
+    const row=document.createElement("tr"); row.innerHTML=`<td class="cell-number">${index+1}</td><td><span class="employee-name"></span></td><td class="unit-cell"></td><td><span class="count-badge ${report.total===0?"count-zero":""}">${report.total}</span></td><td class="dates-cell"></td><td><button class="icon-action eye-action detail-button" type="button" title="Lihat detail" aria-label="Lihat detail">&#128065;</button></td>`;
+    row.querySelector(".employee-name").textContent=report.name; row.querySelector(".unit-cell").textContent=report.unit||"-";
     const dates=document.createElement("div"); dates.className="date-chips"; const visible=report.dates.slice(0,3); visible.forEach(date=>{const chip=document.createElement("span");chip.className="chip";chip.textContent=formatDateIndonesia(date);dates.appendChild(chip);}); if(report.dates.length>3){const more=document.createElement("span");more.className="chip chip-more";more.textContent=`+${report.dates.length-3}`;dates.appendChild(more);} if(!report.dates.length) dates.textContent="-"; row.querySelector(".dates-cell").appendChild(dates);
     row.querySelector(".detail-button").addEventListener("click",()=>detailModal(report)); tableBody.appendChild(row);
   });

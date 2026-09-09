@@ -105,17 +105,17 @@ function renderEmployees() {
     name.textContent =
       employee.name;
 
-    const role =
+    const unit =
       document.createElement("span");
 
-    role.className =
+    unit.className =
       "employee-select-unit";
 
-    role.textContent =
-      ({ PEGAWAI_TETAP: "Pegawai Tetap", PKWT: "PKWT", TENAGA_AHLI: "Tenaga Ahli", MAGANG: "Magang" }[employee.role] || "Belum diatur");
+    unit.textContent =
+      employee.unit || "Pegawai";
 
     button.appendChild(name);
-    button.appendChild(role);
+    button.appendChild(unit);
 
     button.addEventListener(
       "click",

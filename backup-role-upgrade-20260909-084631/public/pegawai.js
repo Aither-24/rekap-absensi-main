@@ -35,8 +35,8 @@ const employeeId =
 const employeeName =
   document.getElementById("employeeName");
 
-const employeeRole =
-  document.getElementById("employeeRole");
+const employeeUnit =
+  document.getElementById("employeeUnit");
 
 const saveButton =
   document.getElementById("saveEmployeeButton");
@@ -61,17 +61,6 @@ const nextPageButton =
 
 const PAGE_SIZE = 10;
 
-function getRoleLabel(role) {
-  const labels = {
-    PEGAWAI_TETAP: "Pegawai Tetap",
-    PKWT: "PKWT",
-    TENAGA_AHLI: "Tenaga Ahli",
-    MAGANG: "Magang",
-  };
-  return labels[role] || "Belum diatur";
-}
-
-
 let currentPage = 1;
 let employees = [];
 
@@ -83,8 +72,8 @@ function openModal(employee = null) {
   employeeName.value =
     employee?.name || "";
 
-  employeeRole.value =
-    employee?.role || "";
+  employeeUnit.value =
+    employee?.unit || "";
 
   modalTitle.textContent =
     employee
@@ -117,7 +106,7 @@ function getFilteredEmployees() {
       employee.name
         .toLocaleLowerCase("id-ID")
         .includes(query) ||
-      (getRoleLabel(employee.role) || "")
+      (employee.unit || "")
         .toLocaleLowerCase("id-ID")
         .includes(query)
   );
@@ -277,7 +266,7 @@ function render() {
           <span class="employee-name"></span>
         </td>
 
-        <td class="role"></td>
+        <td class="unit"></td>
 
         <td>
           <span class="count-badge">
@@ -310,9 +299,9 @@ function render() {
           employee.name;
 
       row
-        .querySelector(".role")
+        .querySelector(".unit")
         .textContent =
-          getRoleLabel(employee.role);
+          employee.unit || "-";
 
       row
         .querySelector("[data-edit]")
@@ -601,20 +590,11 @@ form.addEventListener(
       name:
         employeeName.value.trim(),
 
-      role:
-        employeeRole.value,
+      unit:
+        employeeUnit.value.trim(),
     };
 
     if (!payload.name) {
-      errorText.textContent = "Nama pegawai wajib diisi.";
-      errorBox.classList.remove("hidden");
-      return;
-    }
-
-    if (!payload.role) {
-      errorText.textContent = "Role wajib dipilih.";
-      errorBox.classList.remove("hidden");
-      employeeRole.focus();
       return;
     }
 

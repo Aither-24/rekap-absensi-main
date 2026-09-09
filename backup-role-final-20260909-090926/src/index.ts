@@ -15,7 +15,7 @@ import {
   findSimilarEmployees,
   getEmployees,
   updateEmployee,
-  isEmployeeRole,
+  isValidEmployeeRole,
 } from "./employee.js";
 import {
   getDailyReport,
@@ -449,10 +449,15 @@ async function main() {
         }
 
         try {
+          if (!isValidEmployeeRole(body.role)) {
+            sendJson(res, 400, { success: false, error: "Role wajib dipilih dan harus valid." });
+            return;
+          }
+
           const employee = createEmployee(
             db,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            body.role,
           );
           saveDatabase(db);
           sendJson(res, 201, {
@@ -481,11 +486,16 @@ async function main() {
         }
 
         try {
+          if (!isValidEmployeeRole(body.role)) {
+            sendJson(res, 400, { success: false, error: "Role wajib dipilih dan harus valid." });
+            return;
+          }
+
           const employee = updateEmployee(
             db,
             id,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            body.role,
           );
           saveDatabase(db);
           sendJson(res, 200, {

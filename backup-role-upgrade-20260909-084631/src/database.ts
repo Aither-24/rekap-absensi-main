@@ -25,7 +25,6 @@ export async function getDatabase(): Promise<Database> {
         db = new SQL.Database();
     }
 
-    ensureEmployeeRoleSchema(db);
     ensureAttendanceDaySchema(db);
 
     if (fs.existsSync(DB_FILE)) {
@@ -91,14 +90,4 @@ function ensureAttendanceDaySchema(db: Database): void {
       CREATE INDEX IF NOT EXISTS idx_attendance_days_date
       ON attendance_days(attendance_date);
     `);
-}
-
-
-function ensureEmployeeRoleSchema(db: Database): void {
-    const table = db.exec("PRAGMA table_info(employees);");
-    if (table.length === 0) return;
-    const columns = table[0].values.map((row) => String(row[1]));
-    if (!columns.includes("role")) {
-        db.run("ALTER TABLE employees ADD COLUMN role TEXT;");
-    }
 }

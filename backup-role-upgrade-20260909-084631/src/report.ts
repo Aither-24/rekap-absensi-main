@@ -51,7 +51,7 @@ export function getEmployeeReport(
 export interface MonthlyReport {
   employeeId: number;
   name: string;
-  role: string | null;
+  unit: string | null;
   total: number;
   dates: string[];
 }
@@ -62,13 +62,13 @@ export function getMonthlyReport(
 ): MonthlyReport[] {
   const { start, end } = getCurrentMonthRange(referenceDate);
   const result = db.exec(`
-    SELECT e.id, e.name, e.role, COUNT(a.id) AS total
+    SELECT e.id, e.name, e.unit, COUNT(a.id) AS total
     FROM employees e
     LEFT JOIN attendance a
       ON a.employee_id = e.id
       AND a.attendance_date BETWEEN '${start}' AND '${end}'
-    GROUP BY e.id, e.name, e.role
-    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, total DESC, e.name ASC;
+    GROUP BY e.id, e.name, e.unit
+    ORDER BY total DESC, e.name ASC;
   `);
   if (result.length === 0 || result[0].values.length === 0) return [];
 
@@ -83,7 +83,7 @@ export function getMonthlyReport(
     return {
       employeeId,
       name: String(row[1]),
-      role: row[2] == null ? null : String(row[2]),
+      unit: row[2] == null ? null : String(row[2]),
       total: Number(row[3]),
       dates: dateResult.length > 0 ? dateResult[0].values.map((v) => String(v[0])) : [],
     };
@@ -111,7 +111,7 @@ export function getMonthlyDailySummaries(
         FROM attendance a
         INNER JOIN employees e ON e.id = a.employee_id
         WHERE a.attendance_date = '${escapeSql(date)}'
-        ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
+        ORDER BY e.name ASC;
       `);
 
       const names = namesResult.length > 0
@@ -136,7 +136,7 @@ export function getDailyReport(db: Database, date: string): DailyReport {
     FROM employees e
     INNER JOIN attendance a ON a.employee_id = e.id
     WHERE a.attendance_date = '${safeDate}'
-    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
+    ORDER BY e.name ASC;
   `);
   return {
     date,

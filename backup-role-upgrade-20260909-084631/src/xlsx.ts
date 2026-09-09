@@ -2,7 +2,7 @@ import { deflateRawSync } from "zlib";
 
 export interface MonthlyExportRow {
   name: string;
-  role: string | null;
+  unit: string | null;
   total: number;
   dates: string[];
 }
@@ -10,7 +10,7 @@ export interface MonthlyExportRow {
 export interface DailyExportRow {
   date: string;
   name: string;
-  role: string | null;
+  unit: string | null;
 }
 
 export interface DayStatusExportRow {
@@ -135,11 +135,11 @@ export function createMonthlyWorkbook(
   const summaryRows: Array<Array<{ value: string | number; numeric?: boolean; style?: number }>> = [
     [{ value: `Rekap Keterlambatan ${label}`, style: 2 }],
     [],
-    ["No", "Nama Pegawai", "Role", "Jumlah Terlambat", "Tanggal Keterlambatan"].map((value) => ({ value, style: 1 })),
+    ["No", "Nama Pegawai", "Unit", "Jumlah Terlambat", "Tanggal Keterlambatan"].map((value) => ({ value, style: 1 })),
     ...reports.map((report, index) => [
       { value: index + 1, numeric: true },
       { value: report.name },
-      { value: report.role || "Belum diatur" },
+      { value: report.unit || "-" },
       { value: report.total, numeric: true },
       { value: report.dates.join(", ") || "-" },
     ]),
@@ -147,12 +147,12 @@ export function createMonthlyWorkbook(
   const detailRows: Array<Array<{ value: string | number; numeric?: boolean; style?: number }>> = [
     [{ value: `Detail Harian ${label}`, style: 2 }],
     [],
-    ["No", "Tanggal", "Nama Pegawai", "Role"].map((value) => ({ value, style: 1 })),
+    ["No", "Tanggal", "Nama Pegawai", "Unit"].map((value) => ({ value, style: 1 })),
     ...dailyRows.map((item, index) => [
       { value: index + 1, numeric: true },
       { value: item.date },
       { value: item.name },
-      { value: item.role || "Belum diatur" },
+      { value: item.unit || "-" },
     ]),
   ];
 

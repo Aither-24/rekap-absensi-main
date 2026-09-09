@@ -1,10 +1,20 @@
 import type { Database } from "sql.js";
 import { getTodayIndonesia, getCurrentMonthRange } from "./date.js";
 import { getDayStatus, getDayStatuses, type DayStatus } from "./day-status.js";
+import type { EmployeeRole } from "./employee.js";
+
+const ROLE_ORDER = `CASE e.role
+  WHEN 'PEGAWAI_TETAP' THEN 1
+  WHEN 'PKWT' THEN 2
+  WHEN 'TENAGA_AHLI' THEN 3
+  WHEN 'MAGANG' THEN 4
+  ELSE 5
+END`;
 
 export interface EmployeeReport {
   employeeId: number;
   name: string;
+  role: EmployeeRole | null;
   total: number;
   dates: string[];
 }
@@ -17,22 +27,20 @@ export function getEmployeeReport(
   const { start, end } = getCurrentMonthRange(referenceDate);
   const escapedName = escapeSql(searchName);
   const result = db.exec(`
-    SELECT e.id, e.name, COUNT(a.id) AS total
+    SELECT e.id, e.name, e.role, COUNT(a.id) AS total
     FROM employees e
     INNER JOIN attendance a
       ON a.employee_id = e.id
       AND a.attendance_date BETWEEN '${start}' AND '${end}'
     WHERE LOWER(e.name) LIKE LOWER('%${escapedName}%')
-    GROUP BY e.id, e.name
-    ORDER BY total DESC, e.name ASC;
+    GROUP BY e.id, e.name, e.role
+    ORDER BY ${ROLE_ORDER} ASC, e.name COLLATE NOCASE ASC;
   `);
 
   if (result.length === 0 || result[0].values.length === 0) return [];
 
   return result[0].values.map((row) => {
     const employeeId = Number(row[0]);
-    const name = String(row[1]);
-    const total = Number(row[2]);
     const dateResult = db.exec(`
       SELECT attendance_date FROM attendance
       WHERE employee_id = ${employeeId}
@@ -41,8 +49,9 @@ export function getEmployeeReport(
     `);
     return {
       employeeId,
-      name,
-      total,
+      name: String(row[1]),
+      role: row[2] == null ? null : (String(row[2]) as EmployeeRole),
+      total: Number(row[3]),
       dates: dateResult.length > 0 ? dateResult[0].values.map((v) => String(v[0])) : [],
     };
   });
@@ -51,7 +60,7 @@ export function getEmployeeReport(
 export interface MonthlyReport {
   employeeId: number;
   name: string;
-  role: string | null;
+  role: EmployeeRole | null;
   total: number;
   dates: string[];
 }
@@ -68,7 +77,7 @@ export function getMonthlyReport(
       ON a.employee_id = e.id
       AND a.attendance_date BETWEEN '${start}' AND '${end}'
     GROUP BY e.id, e.name, e.role
-    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, total DESC, e.name ASC;
+    ORDER BY ${ROLE_ORDER} ASC, e.name COLLATE NOCASE ASC;
   `);
   if (result.length === 0 || result[0].values.length === 0) return [];
 
@@ -83,7 +92,7 @@ export function getMonthlyReport(
     return {
       employeeId,
       name: String(row[1]),
-      role: row[2] == null ? null : String(row[2]),
+      role: row[2] == null ? null : (String(row[2]) as EmployeeRole),
       total: Number(row[3]),
       dates: dateResult.length > 0 ? dateResult[0].values.map((v) => String(v[0])) : [],
     };
@@ -111,7 +120,7 @@ export function getMonthlyDailySummaries(
         FROM attendance a
         INNER JOIN employees e ON e.id = a.employee_id
         WHERE a.attendance_date = '${escapeSql(date)}'
-        ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
+        ORDER BY ${ROLE_ORDER} ASC, e.name COLLATE NOCASE ASC;
       `);
 
       const names = namesResult.length > 0
@@ -128,7 +137,12 @@ export function getMonthlyDailySummaries(
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export interface DailyReport { date: string; names: string[]; status: DayStatus | null; }
+export interface DailyReport {
+  date: string;
+  names: string[];
+  status: DayStatus | null;
+}
+
 export function getDailyReport(db: Database, date: string): DailyReport {
   const safeDate = escapeSql(date);
   const result = db.exec(`
@@ -136,7 +150,7 @@ export function getDailyReport(db: Database, date: string): DailyReport {
     FROM employees e
     INNER JOIN attendance a ON a.employee_id = e.id
     WHERE a.attendance_date = '${safeDate}'
-    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
+    ORDER BY ${ROLE_ORDER} ASC, e.name COLLATE NOCASE ASC;
   `);
   return {
     date,

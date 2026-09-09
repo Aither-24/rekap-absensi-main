@@ -49,6 +49,17 @@ const errorBox =
 const errorText =
   document.getElementById("editErrorText");
 
+const ROLE_LABELS = {
+  PEGAWAI_TETAP: "Pegawai Tetap",
+  PKWT: "PKWT",
+  TENAGA_AHLI: "Tenaga Ahli",
+  MAGANG: "Magang",
+};
+
+function roleLabel(role) {
+  return ROLE_LABELS[role] || "Belum diatur";
+}
+
 let employees = [];
 const selectedIds = new Set();
 let currentDayStatus = null;
@@ -112,7 +123,7 @@ function renderEmployees() {
       "employee-select-unit";
 
     role.textContent =
-      ({ PEGAWAI_TETAP: "Pegawai Tetap", PKWT: "PKWT", TENAGA_AHLI: "Tenaga Ahli", MAGANG: "Magang" }[employee.role] || "Belum diatur");
+      roleLabel(employee.role);
 
     button.appendChild(name);
     button.appendChild(role);

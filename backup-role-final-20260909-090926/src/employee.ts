@@ -24,7 +24,7 @@ export interface SimilarEmployee extends Employee {
   similarity: number;
 }
 
-export function isEmployeeRole(value: unknown): value is EmployeeRole {
+export function isValidEmployeeRole(value: unknown): value is EmployeeRole {
   return typeof value === "string" && (EMPLOYEE_ROLES as readonly string[]).includes(value);
 }
 
@@ -36,8 +36,10 @@ function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
   const cols = b.length + 1;
   const matrix: number[][] = Array.from({ length: rows }, () => Array(cols).fill(0));
+
   for (let i = 0; i < rows; i += 1) matrix[i][0] = i;
   for (let j = 0; j < cols; j += 1) matrix[0][j] = j;
+
   for (let i = 1; i < rows; i += 1) {
     for (let j = 1; j < cols; j += 1) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
@@ -48,6 +50,7 @@ function levenshteinDistance(a: string, b: string): number {
       );
     }
   }
+
   return matrix[a.length][b.length];
 }
 
@@ -56,41 +59,75 @@ function calculateNameSimilarity(a: string, b: string): number {
   const right = normalizeEmployeeName(b);
   if (!left || !right) return 0;
   if (left === right) return 1;
+
   const shorter = left.length <= right.length ? left : right;
   const longer = left.length > right.length ? left : right;
-  if (shorter.length >= 4 && (longer.startsWith(`${shorter} `) || longer.endsWith(` ${shorter}`) || longer.includes(` ${shorter} `))) return 0.95;
+
+  if (
+    shorter.length >= 4 &&
+    (longer.startsWith(`${shorter} `) || longer.endsWith(` ${shorter}`) || longer.includes(` ${shorter} `))
+  ) {
+    return 0.95;
+  }
+
   const distance = levenshteinDistance(left, right);
   const maxLength = Math.max(left.length, right.length);
   return maxLength === 0 ? 1 : 1 - distance / maxLength;
 }
 
 function roleOrderSql(alias = "e"): string {
-  return `CASE ${alias}.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END`;
+  return `CASE ${alias}.role
+    WHEN 'PEGAWAI_TETAP' THEN 1
+    WHEN 'PKWT' THEN 2
+    WHEN 'TENAGA_AHLI' THEN 3
+    WHEN 'MAGANG' THEN 4
+    ELSE 5
+  END`;
 }
 
-export function findSimilarEmployees(db: Database, name: string, excludeId: number | null = null): SimilarEmployee[] {
+export function findSimilarEmployees(
+  db: Database,
+  name: string,
+  excludeId: number | null = null,
+): SimilarEmployee[] {
   const cleanName = name.trim();
   if (!cleanName) return [];
+
   return getEmployees(db)
     .filter((employee) => excludeId === null || employee.id !== excludeId)
-    .map((employee) => ({ id: employee.id, name: employee.name, role: employee.role, similarity: calculateNameSimilarity(cleanName, employee.name) }))
+    .map((employee) => ({
+      id: employee.id,
+      name: employee.name,
+      role: employee.role,
+      similarity: calculateNameSimilarity(cleanName, employee.name),
+    }))
     .filter((employee) => employee.similarity >= 0.85)
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 5);
 }
 
 export function findEmployee(db: Database, name: string): Employee | null {
-  const result = db.exec(`SELECT id, name, role FROM employees WHERE LOWER(name) = LOWER('${escapeSql(name)}') LIMIT 1;`);
+  const result = db.exec(`
+    SELECT id, name, role
+    FROM employees
+    WHERE LOWER(name) = LOWER('${escapeSql(name)}')
+    LIMIT 1;
+  `);
+
   if (result.length === 0 || result[0].values.length === 0) return null;
-  const row = result[0].values[0];
-  return { id: Number(row[0]), name: String(row[1]), role: row[2] === null ? null : String(row[2]) as EmployeeRole };
+  return employeeFromRow(result[0].values[0]);
 }
 
 export function findEmployeeById(db: Database, id: number): Employee | null {
-  const result = db.exec(`SELECT id, name, role FROM employees WHERE id = ${Number(id)} LIMIT 1;`);
+  const result = db.exec(`
+    SELECT id, name, role
+    FROM employees
+    WHERE id = ${Number(id)}
+    LIMIT 1;
+  `);
+
   if (result.length === 0 || result[0].values.length === 0) return null;
-  const row = result[0].values[0];
-  return { id: Number(row[0]), name: String(row[1]), role: row[2] === null ? null : String(row[2]) as EmployeeRole };
+  return employeeFromRow(result[0].values[0]);
 }
 
 export function getEmployees(db: Database): EmployeeListItem[] {
@@ -99,37 +136,65 @@ export function getEmployees(db: Database): EmployeeListItem[] {
     FROM employees e
     LEFT JOIN attendance a ON a.employee_id = e.id
     GROUP BY e.id, e.name, e.role
-    ORDER BY ${roleOrderSql("e")}, e.name COLLATE NOCASE ASC;
+    ORDER BY ${roleOrderSql("e")} ASC, e.name COLLATE NOCASE ASC;
   `);
+
   if (result.length === 0) return [];
+
   return result[0].values.map((row) => ({
     id: Number(row[0]),
     name: String(row[1]),
-    role: row[2] === null ? null : String(row[2]) as EmployeeRole,
+    role: row[2] === null ? null : (String(row[2]) as EmployeeRole),
     totalLate: Number(row[3]),
   }));
 }
 
-export function createEmployee(db: Database, name: string, role: EmployeeRole): Employee {
+export function createEmployee(
+  db: Database,
+  name: string,
+  role: EmployeeRole | null = null,
+): Employee {
   const cleanName = name.trim();
   if (!cleanName) throw new Error("Nama pegawai wajib diisi.");
-  if (!isEmployeeRole(role)) throw new Error("Role pegawai tidak valid.");
+  if (role !== null && !isValidEmployeeRole(role)) throw new Error("Role pegawai tidak valid.");
   if (findEmployee(db, cleanName)) throw new Error("Pegawai dengan nama tersebut sudah ada.");
-  db.run(`INSERT INTO employees (name, role) VALUES ('${escapeSql(cleanName)}', '${escapeSql(role)}');`);
+
+  db.run(`
+    INSERT INTO employees (name, role)
+    VALUES (
+      '${escapeSql(cleanName)}',
+      ${role === null ? "NULL" : `'${escapeSql(role)}'`}
+    );
+  `);
+
   const employee = findEmployee(db, cleanName);
   if (!employee) throw new Error(`Gagal membuat pegawai: ${cleanName}`);
   return employee;
 }
 
-export function updateEmployee(db: Database, id: number, name: string, role: EmployeeRole): Employee {
+export function updateEmployee(
+  db: Database,
+  id: number,
+  name: string,
+  role: EmployeeRole | null,
+): Employee {
   const existing = findEmployeeById(db, id);
   if (!existing) throw new Error("Pegawai tidak ditemukan.");
+
   const cleanName = name.trim();
   if (!cleanName) throw new Error("Nama pegawai wajib diisi.");
-  if (!isEmployeeRole(role)) throw new Error("Role pegawai tidak valid.");
+  if (role !== null && !isValidEmployeeRole(role)) throw new Error("Role pegawai tidak valid.");
+
   const duplicate = findEmployee(db, cleanName);
   if (duplicate && duplicate.id !== id) throw new Error("Pegawai dengan nama tersebut sudah ada.");
-  db.run(`UPDATE employees SET name = '${escapeSql(cleanName)}', role = '${escapeSql(role)}' WHERE id = ${Number(id)};`);
+
+  db.run(`
+    UPDATE employees
+    SET name = '${escapeSql(cleanName)}',
+        role = ${role === null ? "NULL" : `'${escapeSql(role)}'`}
+    WHERE id = ${Number(id)};
+  `);
+
   const updated = findEmployeeById(db, id);
   if (!updated) throw new Error("Gagal memperbarui data pegawai.");
   return updated;
@@ -138,16 +203,29 @@ export function updateEmployee(db: Database, id: number, name: string, role: Emp
 export function deleteEmployee(db: Database, id: number): void {
   const employee = findEmployeeById(db, id);
   if (!employee) throw new Error("Pegawai tidak ditemukan.");
+
   runInTransaction(db, () => {
     db.run(`DELETE FROM attendance WHERE employee_id = ${Number(id)};`);
     db.run(`DELETE FROM employees WHERE id = ${Number(id)};`);
   });
 }
 
-export function findOrCreateEmployee(db: Database, name: string): Employee {
+export function findOrCreateEmployee(
+  db: Database,
+  name: string,
+  role: EmployeeRole | null = null,
+): Employee {
   const existing = findEmployee(db, name);
   if (existing) return existing;
-  throw new Error(`Pegawai "${name.trim()}" belum terdaftar. Tambahkan melalui menu Pegawai terlebih dahulu.`);
+  return createEmployee(db, name, role);
+}
+
+function employeeFromRow(row: any[]): Employee {
+  return {
+    id: Number(row[0]),
+    name: String(row[1]),
+    role: row[2] === null ? null : (String(row[2]) as EmployeeRole),
+  };
 }
 
 function escapeSql(value: string): string {

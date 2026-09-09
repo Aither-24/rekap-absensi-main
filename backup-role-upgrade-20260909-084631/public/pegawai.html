@@ -50,11 +50,11 @@
     <main class="main">
       <header class="topbar"><div class="topbar-left"><button class="btn btn-secondary btn-icon menu-button" id="menuButton" aria-label="Buka menu">&#9776;</button><div><p class="eyebrow">Master Data</p><h1 class="page-name">Pegawai</h1></div></div></header>
       <div class="content">
-        <section class="page-heading"><div><h2>Data pegawai</h2><p>Kelola nama dan role pegawai yang digunakan oleh sistem rekap keterlambatan.</p></div><div class="heading-actions"><button class="btn btn-secondary" id="backupButton">Backup Database</button><button class="btn btn-primary" id="addEmployeeButton">+ Tambah Pegawai</button></div></section>
+        <section class="page-heading"><div><h2>Data pegawai</h2><p>Kelola nama dan unit pegawai yang digunakan oleh sistem rekap keterlambatan.</p></div><div class="heading-actions"><button class="btn btn-secondary" id="backupButton">Backup Database</button><button class="btn btn-primary" id="addEmployeeButton">+ Tambah Pegawai</button></div></section>
 
         <section class="card">
-          <div class="card-header"><div><h3 class="card-title">Daftar Pegawai</h3><p class="card-subtitle" id="employeeSummary">Memuat data...</p></div><input class="input search-input" id="employeeSearch" type="search" placeholder="Cari nama atau role..."></div>
-          <div class="table-wrap" id="employeeTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Role</th><th>Total Riwayat</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
+          <div class="card-header"><div><h3 class="card-title">Daftar Pegawai</h3><p class="card-subtitle" id="employeeSummary">Memuat data...</p></div><input class="input search-input" id="employeeSearch" type="search" placeholder="Cari nama atau unit..."></div>
+          <div class="table-wrap" id="employeeTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Unit</th><th>Total Riwayat</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
           <div class="pagination-wrapper hidden" id="employeePagination">
             <p class="pagination-info" id="paginationInfo">
               Menampilkan 0 pegawai
@@ -97,7 +97,7 @@
         <div class="modal-body">
           <input type="hidden" id="employeeId">
           <div class="field"><label for="employeeName">Nama pegawai</label><input class="input" id="employeeName" required></div>
-          <div class="field" style="margin-top:14px"><label for="employeeRole">Role</label><select class="input" id="employeeRole" required><option value="">Pilih role</option><option value="PEGAWAI_TETAP">Pegawai Tetap</option><option value="PKWT">PKWT</option><option value="TENAGA_AHLI">Tenaga Ahli</option><option value="MAGANG">Magang</option></select></div>
+          <div class="field" style="margin-top:14px"><label for="employeeUnit">Unit / bagian</label><input class="input" id="employeeUnit" placeholder="Opsional"></div>
           <div class="notice notice-danger hidden" id="employeeErrorBox" style="margin-top:14px"><span id="employeeErrorText"></span></div>
         </div>
         <div class="modal-actions"><button class="btn btn-secondary" type="button" id="closeEmployeeModal">Batal</button><button class="btn btn-primary" type="submit" id="saveEmployeeButton">Simpan</button></div>

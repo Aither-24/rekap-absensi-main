@@ -15,7 +15,6 @@ import {
   findSimilarEmployees,
   getEmployees,
   updateEmployee,
-  isEmployeeRole,
 } from "./employee.js";
 import {
   getDailyReport,
@@ -57,7 +56,12 @@ function sendFile(
     return;
   }
 
-  res.writeHead(200, { "Content-Type": contentType });
+  res.writeHead(200, {
+    "Content-Type": contentType,
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+  });
   res.end(fs.readFileSync(filePath));
 }
 
@@ -142,6 +146,17 @@ function cleanNames(value: unknown): string[] | null {
   }
 
   return names;
+}
+
+
+function roleRank(role: unknown): number {
+  switch (role) {
+    case "PEGAWAI_TETAP": return 1;
+    case "PKWT": return 2;
+    case "TENAGA_AHLI": return 3;
+    case "MAGANG": return 4;
+    default: return 5;
+  }
 }
 
 async function main() {
@@ -452,7 +467,7 @@ async function main() {
           const employee = createEmployee(
             db,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            body.role,
           );
           saveDatabase(db);
           sendJson(res, 201, {
@@ -485,7 +500,7 @@ async function main() {
             db,
             id,
             body.name,
-            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
+            body.role,
           );
           saveDatabase(db);
           sendJson(res, 200, {
@@ -563,7 +578,7 @@ async function main() {
         const label = `${monthNames[monthNumber - 1]} ${year}`;
         const dailyRows = reports.flatMap((report) =>
           report.dates.map((date) => ({ date, name: report.name, role: report.role })),
-        ).sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name, "id-ID"));
+        ).sort((a, b) => a.date.localeCompare(b.date) || roleRank(a.role) - roleRank(b.role) || a.name.localeCompare(b.name, "id-ID"));
         const range = getCurrentMonthRange(`${month}-01`);
         const dayStatuses = getDayStatuses(db, range.start, range.end);
         const dailySummaryMap = new Map(
