@@ -110,7 +110,7 @@ function renderEmployees() {
       "employee-select-unit";
 
     role.textContent =
-      employee.role || "Belum diatur";
+      ({ PEGAWAI_TETAP: "Pegawai Tetap", PKWT: "PKWT", TENAGA_AHLI: "Tenaga Ahli", MAGANG: "Magang" }[employee.role] || "Belum diatur");
 
     button.appendChild(name);
     button.appendChild(role);

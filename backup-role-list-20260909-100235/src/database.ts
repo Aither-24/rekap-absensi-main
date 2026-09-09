@@ -61,25 +61,6 @@ export function getDatabaseBuffer(db: Database): Buffer {
 }
 
 
-function ensureEmployeeRoleSchema(db: Database): void {
-    const employeeTable = db.exec(`
-      SELECT name FROM sqlite_master
-      WHERE type = 'table' AND name = 'employees'
-      LIMIT 1;
-    `);
-
-    if (employeeTable.length === 0 || employeeTable[0].values.length === 0) {
-        return;
-    }
-
-    const columns = db.exec(`PRAGMA table_info(employees);`);
-    const hasRole = columns.length > 0 && columns[0].values.some((row) => String(row[1]) === "role");
-
-    if (!hasRole) {
-        db.run(`ALTER TABLE employees ADD COLUMN role TEXT;`);
-    }
-}
-
 function ensureAttendanceDaySchema(db: Database): void {
     db.run(`
       CREATE TABLE IF NOT EXISTS attendance_days (
@@ -110,4 +91,14 @@ function ensureAttendanceDaySchema(db: Database): void {
       CREATE INDEX IF NOT EXISTS idx_attendance_days_date
       ON attendance_days(attendance_date);
     `);
+}
+
+
+function ensureEmployeeRoleSchema(db: Database): void {
+    const table = db.exec("PRAGMA table_info(employees);");
+    if (table.length === 0) return;
+    const columns = table[0].values.map((row) => String(row[1]));
+    if (!columns.includes("role")) {
+        db.run("ALTER TABLE employees ADD COLUMN role TEXT;");
+    }
 }

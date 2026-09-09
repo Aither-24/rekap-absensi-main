@@ -10,7 +10,7 @@ export interface AttendanceResult {
 export function addLateAttendance(
   db: Database,
   name: string,
-  date: string,
+  date: string
 ): AttendanceResult {
   const employee = findOrCreateEmployee(db, name);
 

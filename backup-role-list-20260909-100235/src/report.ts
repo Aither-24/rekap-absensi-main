@@ -68,16 +68,7 @@ export function getMonthlyReport(
       ON a.employee_id = e.id
       AND a.attendance_date BETWEEN '${start}' AND '${end}'
     GROUP BY e.id, e.name, e.role
-    ORDER BY
-      CASE e.role
-        WHEN 'PNS' THEN 1
-        WHEN 'PPPK' THEN 2
-        WHEN 'PPPK-PW' THEN 3
-        WHEN 'Tenaga Ahli' THEN 4
-        ELSE 5
-      END,
-      total DESC,
-      e.name COLLATE NOCASE ASC;
+    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, total DESC, e.name ASC;
   `);
   if (result.length === 0 || result[0].values.length === 0) return [];
 
@@ -120,15 +111,7 @@ export function getMonthlyDailySummaries(
         FROM attendance a
         INNER JOIN employees e ON e.id = a.employee_id
         WHERE a.attendance_date = '${escapeSql(date)}'
-        ORDER BY
-          CASE e.role
-            WHEN 'PNS' THEN 1
-            WHEN 'PPPK' THEN 2
-            WHEN 'PPPK-PW' THEN 3
-            WHEN 'Tenaga Ahli' THEN 4
-            ELSE 5
-          END,
-          e.name COLLATE NOCASE ASC;
+        ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
       `);
 
       const names = namesResult.length > 0
@@ -153,15 +136,7 @@ export function getDailyReport(db: Database, date: string): DailyReport {
     FROM employees e
     INNER JOIN attendance a ON a.employee_id = e.id
     WHERE a.attendance_date = '${safeDate}'
-    ORDER BY
-      CASE e.role
-        WHEN 'PNS' THEN 1
-        WHEN 'PPPK' THEN 2
-        WHEN 'PPPK-PW' THEN 3
-        WHEN 'Tenaga Ahli' THEN 4
-        ELSE 5
-      END,
-      e.name COLLATE NOCASE ASC;
+    ORDER BY CASE e.role WHEN 'PEGAWAI_TETAP' THEN 1 WHEN 'PKWT' THEN 2 WHEN 'TENAGA_AHLI' THEN 3 WHEN 'MAGANG' THEN 4 ELSE 5 END, e.name ASC;
   `);
   return {
     date,

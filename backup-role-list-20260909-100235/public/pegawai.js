@@ -61,6 +61,17 @@ const nextPageButton =
 
 const PAGE_SIZE = 10;
 
+function getRoleLabel(role) {
+  const labels = {
+    PEGAWAI_TETAP: "Pegawai Tetap",
+    PKWT: "PKWT",
+    TENAGA_AHLI: "Tenaga Ahli",
+    MAGANG: "Magang",
+  };
+  return labels[role] || "Belum diatur";
+}
+
+
 let currentPage = 1;
 let employees = [];
 
@@ -106,7 +117,7 @@ function getFilteredEmployees() {
       employee.name
         .toLocaleLowerCase("id-ID")
         .includes(query) ||
-      (employee.role || "")
+      (getRoleLabel(employee.role) || "")
         .toLocaleLowerCase("id-ID")
         .includes(query)
   );
@@ -301,7 +312,7 @@ function render() {
       row
         .querySelector(".role")
         .textContent =
-          employee.role || "Belum diatur";
+          getRoleLabel(employee.role);
 
       row
         .querySelector("[data-edit]")

@@ -15,6 +15,7 @@ import {
   findSimilarEmployees,
   getEmployees,
   updateEmployee,
+  isEmployeeRole,
 } from "./employee.js";
 import {
   getDailyReport,
@@ -451,7 +452,7 @@ async function main() {
           const employee = createEmployee(
             db,
             body.name,
-            body.role,
+            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
           );
           saveDatabase(db);
           sendJson(res, 201, {
@@ -484,7 +485,7 @@ async function main() {
             db,
             id,
             body.name,
-            body.role,
+            isEmployeeRole(body.role) ? body.role : (() => { throw new Error("Role pegawai wajib dipilih."); })(),
           );
           saveDatabase(db);
           sendJson(res, 200, {
