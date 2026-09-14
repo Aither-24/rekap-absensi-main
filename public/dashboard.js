@@ -323,3 +323,32 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 setTimeout(watchRecentCardFirstNames, 300);
 setTimeout(watchRecentCardFirstNames, 800);
+/* CHART PERIOD LABEL PATCH */
+function formatMonthYearIndonesian(dateValue = new Date()) {
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const raw = formatter.format(dateValue);
+
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function updateLateChartPeriodLabel() {
+  const periodElement = document.getElementById("lateChartPeriod");
+
+  if (!periodElement) {
+    return;
+  }
+
+  const now = new Date();
+
+  periodElement.textContent =
+    `Periode: ${formatMonthYearIndonesian(now)}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(updateLateChartPeriodLabel, 0);
+  setTimeout(updateLateChartPeriodLabel, 300);
+});

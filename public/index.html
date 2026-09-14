@@ -46,7 +46,13 @@
 
         <section class="dashboard-grid">
           <article class="card">
-            <div class="card-header"><div><h3 class="card-title">Grafik Keterlambatan</h3><p class="card-subtitle">Jumlah pegawai terlambat pada setiap tanggal di bulan berjalan.</p></div></div>
+            <div class="card-header chart-header">
+  <div>
+    <h3 class="card-title">Grafik Keterlambatan</h3>
+    <p class="card-subtitle">Jumlah pegawai terlambat pada setiap tanggal di bulan berjalan.</p>
+  </div>
+  <p class="card-period" id="lateChartPeriod">Periode: -</p>
+</div>
             <div class="card-body"><div id="lateChart" class="chart-area"></div><div class="empty-state hidden" id="chartEmpty"><div class="empty-icon">0</div><h3>Belum ada data grafik</h3><p>Grafik akan tampil setelah ada data keterlambatan bulan ini.</p></div></div>
           </article>
 

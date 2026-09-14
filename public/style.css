@@ -1408,3 +1408,41 @@ label { color: #3c4854; font-size: 12px; font-weight: 750; }
 .brand-subtitle {
     text-align: center !important;
 }
+/* CHART PERIOD LABEL */
+.card-period {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #6b7280;
+}
+/* CHART PERIOD RIGHT ALIGN */
+.chart-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+}
+
+.chart-header .card-period {
+    margin: 0 !important;
+    padding-top: 1px !important;
+    flex-shrink: 0 !important;
+
+    text-align: right !important;
+
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+}
+
+@media (max-width: 600px) {
+    .chart-header {
+        gap: 10px !important;
+    }
+
+    .chart-header .card-period {
+        font-size: 10px !important;
+    }
+}
