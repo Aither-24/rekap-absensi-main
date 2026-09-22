@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Jadwal Pegawai - Attendly</title>
+
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  >
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <aside
+      class="sidebar"
+      id="sidebar"
+    >
+
+      <div class="brand">
+        <div>
+          <p class="brand-title">
+            Attendly
+          </p>
+
+          <p class="brand-subtitle">
+            Puskesmas Krembangan Selatan
+          </p>
+        </div>
+      </div>
+
+      <nav class="nav">
+
+        <p class="nav-label">
+          Menu Utama
+        </p>
+
+        <a
+          class="nav-link"
+          href="/"
+        >
+          <span class="nav-icon">⌂</span>
+          <span>Dashboard</span>
+        </a>
+
+        <a
+          class="nav-link"
+          href="/rekap-harian.html"
+        >
+          <span class="nav-icon">◷</span>
+          <span>Rekap Harian</span>
+        </a>
+
+        <a
+          class="nav-link"
+          href="/rekap-bulanan.html"
+        >
+          <span class="nav-icon">▤</span>
+          <span>Rekap Bulanan</span>
+        </a>
+
+        <a
+          class="nav-link"
+          href="/tambah-rekap.html"
+        >
+          <span class="nav-icon">＋</span>
+          <span>Tambah Rekap</span>
+        </a>
+
+        <a
+          class="nav-link"
+          href="/edit-rekap.html"
+        >
+          <span class="nav-icon">✎</span>
+          <span>Edit Rekap</span>
+        </a>
+
+        <a
+          class="nav-link"
+          href="/pegawai.html"
+        >
+          <span class="nav-icon">♙</span>
+          <span>Pegawai</span>
+        </a>
+
+        <a
+          class="nav-link active"
+          href="/jadwal-pegawai.html"
+        >
+          <span class="nav-icon">▦</span>
+          <span>Jadwal Pegawai</span>
+        </a>
+
+      </nav>
+
+    </aside>
+
+
+    <main class="main">
+
+      <header class="topbar">
+
+        <div class="topbar-left">
+
+          <div>
+            <p class="eyebrow">
+              Jadwal
+            </p>
+
+            <h1 class="page-name">
+              Jadwal Pegawai
+            </h1>
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <div class="content">
+
+        <section class="page-heading">
+
+          <div>
+            <h2>Jadwal Pegawai</h2>
+
+            <p>
+              Lihat jadwal berdasarkan kategori pegawai dan periode.
+            </p>
+          </div>
+
+        </section>
+
+
+        <section class="card schedule-card">
+
+          <div class="schedule-filter-bar">
+
+            <div class="field schedule-filter-field">
+
+              <label for="scheduleCategory">
+                Kategori Pegawai
+              </label>
+
+              <select
+                class="input"
+                id="scheduleCategory"
+              >
+                <option value="">
+                  Memuat kategori...
+                </option>
+              </select>
+
+            </div>
+
+
+            <div class="field schedule-filter-field">
+
+              <label for="scheduleMonth">
+                Bulan
+              </label>
+
+              <select
+                class="input"
+                id="scheduleMonth"
+              ></select>
+
+            </div>
+
+
+            <div class="field schedule-filter-field">
+
+              <label for="scheduleYear">
+                Tahun
+              </label>
+
+              <select
+                class="input"
+                id="scheduleYear"
+              ></select>
+
+            </div>
+
+          </div>
+
+
+          <div class="schedule-toolbar">
+
+            <div>
+
+              <h3
+                class="card-title"
+                id="scheduleTitle"
+              >
+                Matriks Jadwal
+              </h3>
+
+              <p
+                class="card-subtitle"
+                id="scheduleSummary"
+              >
+                Memuat data...
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="schedule-matrix-wrap"
+            id="scheduleMatrixWrap"
+          >
+
+            <table
+              class="schedule-matrix"
+              id="scheduleMatrix"
+            >
+
+              <thead
+                id="scheduleMatrixHead"
+              ></thead>
+
+              <tbody
+                id="scheduleMatrixBody"
+              ></tbody>
+
+            </table>
+
+          </div>
+
+
+          <div
+            class="schedule-empty hidden"
+            id="scheduleEmpty"
+          >
+            <strong>
+              Belum ada pegawai pada kategori ini.
+            </strong>
+
+            <span>
+              Atur kategori pegawai dari menu Data Pegawai.
+            </span>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+
+  <script
+    type="module"
+    src="/jadwal-pegawai.js"
+  ></script>
+
+</body>
+</html>

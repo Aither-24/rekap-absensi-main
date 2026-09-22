@@ -42,6 +42,13 @@
     <span class="nav-icon">&#128101;</span>
     <span>Pegawai</span>
   </a>
+        <a
+          class="nav-link"
+          href="/jadwal-pegawai.html"
+        >
+          <span class="nav-icon">▦</span>
+          <span>Jadwal Pegawai</span>
+        </a>
 </nav>
       <div class="sidebar-footer"><div class="status-card"><p class="status-label">Status sistem</p><div class="status-line"><span class="status-dot"></span>Sistem aktif</div></div></div>
     </aside>
@@ -53,8 +60,17 @@
         <section class="page-heading"><div><h2>Data pegawai</h2><p>Kelola nama dan role pegawai yang digunakan oleh sistem rekap keterlambatan.</p></div><div class="heading-actions"><button class="btn btn-secondary" id="backupButton">Backup Database</button><button class="btn btn-primary" id="addEmployeeButton">+ Tambah Pegawai</button></div></section>
 
         <section class="card">
-          <div class="card-header"><div><h3 class="card-title">Daftar Pegawai</h3><p class="card-subtitle" id="employeeSummary">Memuat data...</p></div><input class="input search-input" id="employeeSearch" type="search" placeholder="Cari nama atau role..."></div>
-          <div class="table-wrap" id="employeeTableWrap"><table><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Role</th><th>Total Riwayat</th><th style="text-align:right">Aksi</th></tr></thead><tbody id="employeeTableBody"></tbody></table></div>
+          <div class="card-header"><div><h3 class="card-title">Daftar Pegawai</h3><p class="card-subtitle" id="employeeSummary">Memuat data...</p></div><input class="input search-input" id="employeeSearch" type="search" placeholder="Cari nama, role, atau kategori..."></div>
+          <div class="table-wrap" id="employeeTableWrap"><table><thead>
+<tr>
+  <th>No.</th>
+  <th>Nama Pegawai</th>
+  <th>Role</th>
+  <th>Kategori Jadwal</th>
+  <th>Total Riwayat</th>
+  <th style="text-align:right">Aksi</th>
+</tr>
+</thead><tbody id="employeeTableBody"></tbody></table></div>
           <div class="pagination-wrapper hidden" id="employeePagination">
             <p class="pagination-info" id="paginationInfo">
               Menampilkan 0 pegawai
@@ -106,5 +122,7 @@
   </div>
 
   <script type="module" src="/pegawai.js"></script>
+  
+  <script type="module" src="/pegawai-kategori.js"></script>
 </body>
 </html>

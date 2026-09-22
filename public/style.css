@@ -1446,3 +1446,270 @@ label { color: #3c4854; font-size: 12px; font-weight: 750; }
         font-size: 10px !important;
     }
 }
+
+
+/* ===== JADWAL PEGAWAI ===== */
+
+.schedule-card {
+  overflow: hidden;
+}
+
+.schedule-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.schedule-filter-field {
+  width: 260px;
+  max-width: 100%;
+}
+
+.schedule-filter-field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.schedule-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.schedule-matrix-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 345px);
+}
+
+.schedule-matrix {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.schedule-matrix th,
+.schedule-matrix td {
+  height: 48px;
+  padding: 6px 8px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.schedule-matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: #f8fafc;
+}
+
+.schedule-name-column {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  width: 210px;
+  min-width: 210px;
+  max-width: 210px;
+  text-align: left !important;
+  background: var(--surface);
+}
+
+.schedule-matrix thead .schedule-name-column {
+  z-index: 6;
+  background: #f8fafc;
+}
+
+.schedule-name-column strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.schedule-employee-role {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.schedule-day-column {
+  width: 48px;
+  min-width: 48px;
+}
+
+.schedule-code-cell {
+  width: 48px;
+  min-width: 48px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.schedule-day-number {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.schedule-day-name {
+  display: block;
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.schedule-empty-code {
+  font-weight: 400;
+  color: #b8c0cc;
+}
+
+.schedule-sunday {
+  background: #f5f6f8 !important;
+}
+
+.schedule-empty {
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.schedule-empty strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.schedule-empty span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 800px) {
+
+  .schedule-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-filter-field {
+    width: 100%;
+  }
+
+  .schedule-name-column {
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+  }
+
+  .schedule-matrix-wrap {
+    max-height: calc(100vh - 410px);
+  }
+}
+
+
+/* WARNA KODE JADWAL */
+
+.schedule-code-cell {
+  border-radius: 6px;
+}
+
+/* L = libur */
+.schedule-code-l {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+/* kode-kode lain dibedakan secara visual */
+.schedule-code-p {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.schedule-code-ps {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.schedule-code-m {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+.schedule-code-s {
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+}
+
+.schedule-code-pg {
+  background: #cffafe !important;
+  color: #0e7490 !important;
+}
+
+.schedule-code-sm {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
+}
+
+.schedule-code-pv {
+  background: #fce7f3 !important;
+  color: #be185d !important;
+}
+
+.schedule-code-py {
+  background: #ecfccb !important;
+  color: #4d7c0f !important;
+}
+
+.schedule-code-pr {
+  background: #fef9c3 !important;
+  color: #854d0e !important;
+}
+
+.schedule-code-ptu {
+  background: #fde68a !important;
+  color: #78350f !important;
+}
+
+.schedule-code-tgc {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+.schedule-code-c {
+  background: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.schedule-code-plansia {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+.schedule-code-other {
+  background: #f3f4f6 !important;
+  color: #374151 !important;
+}
+
+/*
+ * Hari Minggu hanya abu-abu jika jadwal kosong.
+ * Jika ada kode shift, warna kode tetap menang.
+ */
+.schedule-code-cell.schedule-empty-code.schedule-sunday {
+  background: #f5f6f8 !important;
+}
