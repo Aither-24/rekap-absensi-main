@@ -824,8 +824,15 @@ function updateScheduleChangeInfo() {
     saveScheduleButton.disabled =
       true;
 
+    /*
+     * Batalkan tetap aktif selama
+     * sedang berada dalam mode edit,
+     * walaupun belum ada perubahan.
+     */
     cancelScheduleButton.disabled =
-      true;
+      !document.body.classList.contains(
+        "schedule-edit-mode"
+      );
 
     return;
   }
@@ -1331,6 +1338,13 @@ function setScheduleEditMode(
       "hidden",
       !enabled
     );
+
+    /*
+     * Tombol Batalkan selalu bisa digunakan
+     * ketika mode Edit Jadwal aktif.
+     */
+    cancelScheduleButton.disabled =
+      !enabled;
   }
 
 
@@ -1348,6 +1362,9 @@ function setScheduleEditMode(
       }
     );
   }
+
+
+  updateScheduleChangeInfo();
 
 
   if (!enabled) {
@@ -1504,7 +1521,7 @@ async function exportScheduleExcel() {
 
     const response =
       await fetch(
-        `/api/schedule-export-v2?month=${period}`
+        `/api/schedule-export?month=${period}`
       );
 
 
