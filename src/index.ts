@@ -27,12 +27,12 @@ import { createMonthlyWorkbook } from "./xlsx.js";
 import { createScheduleWorkbook } from "./schedule-export.js";
 import { getDayStatus, getDayStatuses, setDayStatus, type DayStatus } from "./day-status.js";
 import { getCurrentMonthRange } from "./date.js";
+import { APP_ROOT, APP_URL, NODE_ENV, PORT } from "./config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = 3000;
-const PUBLIC_DIR = path.join(__dirname, "..", "public");
+const PUBLIC_DIR = path.join(APP_ROOT, "public");
 
 function sendJson(
   res: http.ServerResponse,
@@ -150,7 +150,8 @@ async function main() {
   console.log("================================");
   console.log("       REKAP ABSENSI WEB");
   console.log("================================");
-  console.log(`Web: http://localhost:${PORT}`);
+  console.log(`Mode: ${NODE_ENV}`);
+  console.log(`Web: ${APP_URL}`);
   console.log(`Public: ${PUBLIC_DIR}`);
   console.log("================================");
 
@@ -1891,7 +1892,7 @@ sendJson(res, 404, {
   });
 
   server.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
+    console.log(`Server aktif di ${APP_URL} (port ${PORT})`);
   });
 }
 

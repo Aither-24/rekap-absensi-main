@@ -31,3 +31,7 @@ data/*.sqlite-journal
 # Database utama Attendly tetap masuk Git
 !data/
 !data/absensi.sqlite
+# Environment variables
+.env
+.env.*
+!.env.example

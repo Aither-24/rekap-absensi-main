@@ -2,14 +2,14 @@ import initSqlJs from "sql.js";
 import type { Database } from "sql.js";
 import fs from "fs";
 import path from "path";
+import { DB_FILE, SQLJS_DIR } from "./config.js";
 
-const DB_DIR = path.join(process.cwd(), "data");
-const DB_FILE = path.join(DB_DIR, "absensi.sqlite");
+const DB_DIR = path.dirname(DB_FILE);
 
 export async function getDatabase(): Promise<Database> {
     const SQL = await initSqlJs({
         locateFile: (file) =>
-            path.join(process.cwd(), "node_modules/sql.js/dist", file),
+            path.join(SQLJS_DIR, file),
     });
 
     if (!fs.existsSync(DB_DIR)) {
