@@ -981,7 +981,313 @@ async function main() {
       // JADWAL PEGAWAI MATRIX API
       // GET /api/schedule-matrix?month=YYYY-MM&categoryId=1
       // ==================================================
+      
+      // ==================================================
+      // SCHEDULE EXPORT V2
+      // GET /api/schedule-export-v2?month=2026-09
+      // ==================================================
       if (
+        url.pathname === "/api/schedule-export-v2" &&
+        req.method === "GET"
+      ) {
+        const month =
+          url.searchParams.get("month");
+
+        if (
+          !month ||
+          !/^\d{4}-\d{2}$/.test(month)
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Periode tidak valid.",
+          });
+          return;
+        }
+
+        const [year, monthNumber] =
+          month.split("-").map(Number);
+
+        if (
+          !Number.isInteger(year) ||
+          !Number.isInteger(monthNumber) ||
+          monthNumber < 1 ||
+          monthNumber > 12
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Periode tidak valid.",
+          });
+          return;
+        }
+
+        const daysInMonth =
+          new Date(
+            year,
+            monthNumber,
+            0
+          ).getDate();
+
+        const XLSX =
+          await import("xlsx");
+
+        const workbook =
+          XLSX.utils.book_new();
+
+        const categoryResult =
+          db.exec(`
+            SELECT
+              id,
+              name
+            FROM schedule_categories
+            ORDER BY
+              sort_order ASC,
+              name COLLATE NOCASE ASC;
+          `);
+
+        const categories =
+          categoryResult.length === 0
+            ? []
+            : categoryResult[0].values.map(
+                (row) => ({
+                  id: Number(row[0]),
+                  name: String(row[1]),
+                })
+              );
+
+        for (const category of categories) {
+
+          const employeeResult =
+            db.exec(`
+              SELECT
+                id,
+                name,
+                role
+              FROM employees
+              WHERE schedule_category_id =
+                ${category.id}
+              ORDER BY
+                name COLLATE NOCASE ASC;
+            `);
+
+          const employees =
+            employeeResult.length === 0
+              ? []
+              : employeeResult[0].values.map(
+                  (row) => ({
+                    id: Number(row[0]),
+                    name: String(row[1]),
+                    role:
+                      row[2] === null
+                        ? ""
+                        : String(row[2]),
+                    schedules:
+                      {} as Record<string, string>,
+                  })
+                );
+
+          if (employees.length > 0) {
+
+            const ids =
+              employees
+                .map(
+                  (employee) =>
+                    employee.id
+                )
+                .join(",");
+
+            const startDate =
+              `${month}-01`;
+
+            const endDate =
+              `${month}-${String(
+                daysInMonth
+              ).padStart(2, "0")}`;
+
+            const scheduleResult =
+              db.exec(`
+                SELECT
+                  employee_id,
+                  schedule_date,
+                  schedule_code
+                FROM work_schedules
+                WHERE employee_id IN (${ids})
+                  AND schedule_date >= '${startDate}'
+                  AND schedule_date <= '${endDate}'
+                ORDER BY
+                  schedule_date ASC;
+              `);
+
+            const employeeMap =
+              new Map(
+                employees.map(
+                  (employee) => [
+                    employee.id,
+                    employee,
+                  ]
+                )
+              );
+
+            if (
+              scheduleResult.length > 0
+            ) {
+
+              for (
+                const row
+                of scheduleResult[0].values
+              ) {
+
+                const employee =
+                  employeeMap.get(
+                    Number(row[0])
+                  );
+
+                if (!employee) {
+                  continue;
+                }
+
+                const day =
+                  String(
+                    Number(
+                      String(row[1])
+                        .slice(8, 10)
+                    )
+                  );
+
+                employee.schedules[day] =
+                  String(row[2]);
+              }
+            }
+          }
+
+          const rows:
+            Array<Array<string | number>> =
+            [];
+
+          const header:
+            Array<string | number> = [
+              "Nama Pegawai",
+              "Role",
+            ];
+
+          for (
+            let day = 1;
+            day <= daysInMonth;
+            day += 1
+          ) {
+            header.push(day);
+          }
+
+          rows.push(header);
+
+          for (
+            const employee
+            of employees
+          ) {
+
+            const row:
+              Array<string | number> = [
+                employee.name,
+                employee.role,
+              ];
+
+            for (
+              let day = 1;
+              day <= daysInMonth;
+              day += 1
+            ) {
+
+              row.push(
+                employee.schedules[
+                  String(day)
+                ] || ""
+              );
+            }
+
+            rows.push(row);
+          }
+
+          const worksheet =
+            XLSX.utils.aoa_to_sheet(
+              rows
+            );
+
+          worksheet["!cols"] = [
+            { wch: 28 },
+            { wch: 14 },
+            ...Array.from(
+              { length: daysInMonth },
+              () => ({
+                wch: 6,
+              })
+            ),
+          ];
+
+          let sheetName =
+            category.name
+              .replace(
+                /[\\\/\?\*\[\]\:]/g,
+                " "
+              )
+              .trim()
+              .slice(0, 31);
+
+          if (!sheetName) {
+            sheetName =
+              `Kategori ${category.id}`;
+          }
+
+          XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            sheetName
+          );
+        }
+
+        const buffer =
+          XLSX.write(
+            workbook,
+            {
+              type: "buffer",
+              bookType: "xlsx",
+            }
+          );
+
+        const monthNames = [
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
+        ];
+
+        const fileName =
+          `Jadwal-Pegawai-${monthNames[monthNumber - 1]}-${year}.xlsx`;
+
+        res.writeHead(
+          200,
+          {
+            "Content-Type":
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+            "Content-Disposition":
+              `attachment; filename="${fileName}"`,
+
+            "Content-Length":
+              buffer.length,
+          }
+        );
+
+        res.end(buffer);
+        return;
+      }
+if (
         url.pathname === "/api/schedule-matrix" &&
         req.method === "GET"
       ) {
@@ -1449,6 +1755,916 @@ async function main() {
           employees,
         });
 
+        return;
+      }
+
+      // ==================================================
+      // JADWAL BATCH SAVE API
+      // PUT /api/schedule-batch
+      // ==================================================
+      if (
+        url.pathname === "/api/schedule-batch" &&
+        req.method === "PUT"
+      ) {
+        const body =
+          await parseJsonBody(req);
+
+        const year =
+          Number(body.year);
+
+        const month =
+          Number(body.month);
+
+        const changes =
+          Array.isArray(body.changes)
+            ? body.changes
+            : [];
+
+        if (
+          !Number.isInteger(year) ||
+          year < 2000 ||
+          year > 2100
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Tahun tidak valid.",
+          });
+
+          return;
+        }
+
+        if (
+          !Number.isInteger(month) ||
+          month < 1 ||
+          month > 12
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Bulan tidak valid.",
+          });
+
+          return;
+        }
+
+        if (changes.length === 0) {
+          sendJson(res, 400, {
+            success: false,
+            error:
+              "Tidak ada perubahan jadwal.",
+          });
+
+          return;
+        }
+
+        if (changes.length > 1000) {
+          sendJson(res, 400, {
+            success: false,
+            error:
+              "Terlalu banyak perubahan sekaligus.",
+          });
+
+          return;
+        }
+
+        const daysInMonth =
+          new Date(
+            year,
+            month,
+            0,
+          ).getDate();
+
+        type ScheduleChange = {
+          employeeId: number;
+          day: number;
+          code: string;
+        };
+
+        const normalizedChanges:
+          ScheduleChange[] = [];
+
+        for (const change of changes) {
+          const employeeId =
+            Number(change.employeeId);
+
+          const day =
+            Number(change.day);
+
+          const code =
+            String(
+              change.code ?? "",
+            ).trim();
+
+          if (
+            !Number.isInteger(employeeId) ||
+            employeeId <= 0
+          ) {
+            sendJson(res, 400, {
+              success: false,
+              error:
+                "ID pegawai tidak valid.",
+            });
+
+            return;
+          }
+
+          if (
+            !Number.isInteger(day) ||
+            day < 1 ||
+            day > daysInMonth
+          ) {
+            sendJson(res, 400, {
+              success: false,
+              error:
+                `Tanggal ${day} tidak valid.`,
+            });
+
+            return;
+          }
+
+          if (code.length > 40) {
+            sendJson(res, 400, {
+              success: false,
+              error:
+                "Kode jadwal terlalu panjang.",
+            });
+
+            return;
+          }
+
+          const employeeCheck =
+            db.exec(`
+              SELECT id
+              FROM employees
+              WHERE id = ${employeeId}
+              LIMIT 1;
+            `);
+
+          if (
+            employeeCheck.length === 0 ||
+            employeeCheck[0].values.length === 0
+          ) {
+            sendJson(res, 404, {
+              success: false,
+              error:
+                `Pegawai ID ${employeeId} tidak ditemukan.`,
+            });
+
+            return;
+          }
+
+          normalizedChanges.push({
+            employeeId,
+            day,
+            code,
+          });
+        }
+
+        db.run("BEGIN TRANSACTION;");
+
+        try {
+          db.run(`
+            INSERT OR IGNORE INTO schedule_periods (
+              schedule_year,
+              schedule_month,
+              status,
+              created_at,
+              updated_at
+            )
+            VALUES (
+              ${year},
+              ${month},
+              'DRAFT',
+              CURRENT_TIMESTAMP,
+              CURRENT_TIMESTAMP
+            );
+          `);
+
+          const periodResult =
+            db.exec(`
+              SELECT id
+              FROM schedule_periods
+              WHERE schedule_year = ${year}
+                AND schedule_month = ${month}
+              LIMIT 1;
+            `);
+
+          if (
+            periodResult.length === 0 ||
+            periodResult[0].values.length === 0
+          ) {
+            throw new Error(
+              "Periode jadwal gagal dibuat.",
+            );
+          }
+
+          const periodId =
+            Number(
+              periodResult[0]
+                .values[0][0],
+            );
+
+          let insertedOrUpdated = 0;
+          let deleted = 0;
+
+          for (
+            const change
+            of normalizedChanges
+          ) {
+            const date =
+              `${year}-${String(month).padStart(2, "0")}-${String(change.day).padStart(2, "0")}`;
+
+            if (!change.code) {
+              db.run(`
+                DELETE FROM work_schedules
+                WHERE employee_id =
+                  ${change.employeeId}
+                  AND schedule_date =
+                    '${date}';
+              `);
+
+              deleted += 1;
+              continue;
+            }
+
+            const safeCode =
+              change.code
+                .replace(/'/g, "''");
+
+            db.run(`
+              INSERT INTO work_schedules (
+                period_id,
+                employee_id,
+                schedule_date,
+                schedule_code,
+                source,
+                is_locked,
+                notes,
+                created_at,
+                updated_at
+              )
+              VALUES (
+                ${periodId},
+                ${change.employeeId},
+                '${date}',
+                '${safeCode}',
+                'MANUAL',
+                0,
+                NULL,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              )
+              ON CONFLICT(
+                employee_id,
+                schedule_date
+              )
+              DO UPDATE SET
+                period_id =
+                  excluded.period_id,
+
+                schedule_code =
+                  excluded.schedule_code,
+
+                source =
+                  'MANUAL',
+
+                updated_at =
+                  CURRENT_TIMESTAMP;
+            `);
+
+            insertedOrUpdated += 1;
+          }
+
+          db.run(`
+            UPDATE schedule_periods
+            SET
+              status = 'DRAFT',
+              updated_at =
+                CURRENT_TIMESTAMP
+            WHERE id = ${periodId};
+          `);
+
+          db.run("COMMIT;");
+
+          saveDatabase(db);
+
+          sendJson(res, 200, {
+            success: true,
+            year,
+            month,
+            totalChanges:
+              normalizedChanges.length,
+            saved:
+              insertedOrUpdated,
+            deleted,
+          });
+
+          return;
+        }
+        catch (error) {
+          db.run("ROLLBACK;");
+
+          throw error;
+        }
+      }
+
+      // ==================================================
+      // SCHEDULE EXPORT XLSX API
+      // GET /api/schedule-export?month=2026-09
+      // ==================================================
+      if (
+        url.pathname === "/api/schedule-export" &&
+        req.method === "GET"
+      ) {
+        const month =
+          url.searchParams.get("month");
+
+        if (
+          !month ||
+          !/^\d{4}-\d{2}$/.test(month)
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Periode tidak valid.",
+          });
+
+          return;
+        }
+
+        const [year, monthNumber] =
+          month.split("-").map(Number);
+
+        if (
+          monthNumber < 1 ||
+          monthNumber > 12
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Bulan tidak valid.",
+          });
+
+          return;
+        }
+
+        const daysInMonth =
+          new Date(
+            year,
+            monthNumber,
+            0,
+          ).getDate();
+
+        const XLSX =
+          await import("xlsx");
+
+        const workbook =
+          XLSX.utils.book_new();
+
+
+        const categoryResult =
+          db.exec(`
+            SELECT
+              id,
+              name
+            FROM schedule_categories
+            ORDER BY
+              sort_order ASC,
+              name COLLATE NOCASE ASC;
+          `);
+
+
+        const categories =
+          categoryResult.length === 0
+            ? []
+            : categoryResult[0].values.map(
+                (row) => ({
+                  id: Number(row[0]),
+                  name: String(row[1]),
+                }),
+              );
+
+
+        for (
+          const category
+          of categories
+        ) {
+
+          const employeeResult =
+            db.exec(`
+              SELECT
+                id,
+                name,
+                role
+              FROM employees
+              WHERE schedule_category_id =
+                ${category.id}
+              ORDER BY
+                name COLLATE NOCASE ASC;
+            `);
+
+
+          const employees =
+            employeeResult.length === 0
+              ? []
+              : employeeResult[0].values.map(
+                  (row) => ({
+                    id: Number(row[0]),
+                    name: String(row[1]),
+                    role:
+                      row[2] === null
+                        ? ""
+                        : String(row[2]),
+                    schedules:
+                      {} as Record<string, string>,
+                  }),
+                );
+
+
+          if (employees.length > 0) {
+
+            const ids =
+              employees
+                .map(
+                  (employee) =>
+                    employee.id
+                )
+                .join(",");
+
+
+            const startDate =
+              `${month}-01`;
+
+            const endDate =
+              `${month}-${String(
+                daysInMonth,
+              ).padStart(2, "0")}`;
+
+
+            const scheduleResult =
+              db.exec(`
+                SELECT
+                  employee_id,
+                  schedule_date,
+                  schedule_code
+                FROM work_schedules
+                WHERE employee_id IN (${ids})
+                  AND schedule_date >=
+                    '${startDate}'
+                  AND schedule_date <=
+                    '${endDate}';
+              `);
+
+
+            const employeeMap =
+              new Map(
+                employees.map(
+                  (employee) => [
+                    employee.id,
+                    employee,
+                  ],
+                ),
+              );
+
+
+            if (
+              scheduleResult.length > 0
+            ) {
+
+              for (
+                const row
+                of scheduleResult[0].values
+              ) {
+
+                const employee =
+                  employeeMap.get(
+                    Number(row[0])
+                  );
+
+                if (!employee) {
+                  continue;
+                }
+
+                const day =
+                  String(
+                    Number(
+                      String(row[1])
+                        .slice(8, 10)
+                    )
+                  );
+
+                employee.schedules[day] =
+                  String(row[2]);
+              }
+            }
+          }
+
+
+          const rows:
+            Array<Array<string | number>> =
+            [];
+
+
+          const header:
+            Array<string | number> = [
+              "Nama Pegawai",
+              "Role",
+            ];
+
+
+          for (
+            let day = 1;
+            day <= daysInMonth;
+            day += 1
+          ) {
+            header.push(day);
+          }
+
+
+          rows.push(header);
+
+
+          for (
+            const employee
+            of employees
+          ) {
+
+            const row:
+              Array<string | number> = [
+                employee.name,
+                employee.role,
+              ];
+
+
+            for (
+              let day = 1;
+              day <= daysInMonth;
+              day += 1
+            ) {
+
+              row.push(
+                employee.schedules[
+                  String(day)
+                ] || ""
+              );
+            }
+
+
+            rows.push(row);
+          }
+
+
+          const sheet =
+            XLSX.utils.aoa_to_sheet(
+              rows
+            );
+
+
+          sheet["!cols"] = [
+            { wch: 28 },
+            { wch: 14 },
+            ...Array.from(
+              { length: daysInMonth },
+              () => ({ wch: 6 })
+            ),
+          ];
+
+
+          const safeSheetName =
+            category.name
+              .replace(
+                /[\\\/\?\*\[\]\:]/g,
+                " "
+              )
+              .slice(0, 31);
+
+
+          XLSX.utils.book_append_sheet(
+            workbook,
+            sheet,
+            safeSheetName
+          );
+        }
+
+
+        const buffer =
+          XLSX.write(
+            workbook,
+            {
+              type: "buffer",
+              bookType: "xlsx",
+            }
+          );
+
+
+        const monthNames = [
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
+        ];
+
+
+        const fileName =
+          `Jadwal Pegawai ${monthNames[monthNumber - 1]} ${year}.xlsx`;
+
+
+        res.writeHead(
+          200,
+          {
+            "Content-Type":
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+            "Content-Disposition":
+              `attachment; filename="${fileName}"`,
+
+            "Content-Length":
+              buffer.length,
+          }
+        );
+
+
+        res.end(buffer);
+
+        return;
+      }
+
+      // ==================================================
+      // SCHEDULE EXPORT API FINAL
+      // ==================================================
+      if (
+        url.pathname === "/api/schedule-export" &&
+        req.method === "GET"
+      ) {
+        const month =
+          url.searchParams.get("month");
+
+        if (
+          !month ||
+          !/^\d{4}-\d{2}$/.test(month)
+        ) {
+          sendJson(res, 400, {
+            success: false,
+            error: "Periode tidak valid.",
+          });
+          return;
+        }
+
+        const [year, monthNumber] =
+          month.split("-").map(Number);
+
+        const daysInMonth =
+          new Date(
+            year,
+            monthNumber,
+            0,
+          ).getDate();
+
+        const XLSX =
+          await import("xlsx");
+
+        const workbook =
+          XLSX.utils.book_new();
+
+        const categoryResult =
+          db.exec(`
+            SELECT
+              id,
+              name
+            FROM schedule_categories
+            ORDER BY
+              sort_order ASC,
+              name COLLATE NOCASE ASC;
+          `);
+
+        const categories =
+          categoryResult.length === 0
+            ? []
+            : categoryResult[0].values.map(
+                (row) => ({
+                  id: Number(row[0]),
+                  name: String(row[1]),
+                }),
+              );
+
+        for (const category of categories) {
+
+          const employeeResult =
+            db.exec(`
+              SELECT
+                id,
+                name,
+                role
+              FROM employees
+              WHERE schedule_category_id =
+                ${category.id}
+              ORDER BY
+                name COLLATE NOCASE ASC;
+            `);
+
+          const employees =
+            employeeResult.length === 0
+              ? []
+              : employeeResult[0].values.map(
+                  (row) => ({
+                    id: Number(row[0]),
+                    name: String(row[1]),
+                    role:
+                      row[2] === null
+                        ? ""
+                        : String(row[2]),
+                    schedules:
+                      {} as Record<string, string>,
+                  }),
+                );
+
+          if (employees.length > 0) {
+
+            const ids =
+              employees
+                .map((employee) => employee.id)
+                .join(",");
+
+            const startDate =
+              `${month}-01`;
+
+            const endDate =
+              `${month}-${String(
+                daysInMonth,
+              ).padStart(2, "0")}`;
+
+            const scheduleResult =
+              db.exec(`
+                SELECT
+                  employee_id,
+                  schedule_date,
+                  schedule_code
+                FROM work_schedules
+                WHERE employee_id IN (${ids})
+                  AND schedule_date >= '${startDate}'
+                  AND schedule_date <= '${endDate}'
+                ORDER BY schedule_date ASC;
+              `);
+
+            const employeeMap =
+              new Map(
+                employees.map(
+                  (employee) => [
+                    employee.id,
+                    employee,
+                  ],
+                ),
+              );
+
+            if (scheduleResult.length > 0) {
+
+              for (
+                const row
+                of scheduleResult[0].values
+              ) {
+
+                const employee =
+                  employeeMap.get(
+                    Number(row[0])
+                  );
+
+                if (!employee) {
+                  continue;
+                }
+
+                const day =
+                  String(
+                    Number(
+                      String(row[1])
+                        .slice(8, 10)
+                    )
+                  );
+
+                employee.schedules[day] =
+                  String(row[2]);
+              }
+            }
+          }
+
+          const rows:
+            Array<Array<string | number>> =
+            [];
+
+          const header:
+            Array<string | number> = [
+              "Nama Pegawai",
+              "Role",
+            ];
+
+          for (
+            let day = 1;
+            day <= daysInMonth;
+            day += 1
+          ) {
+            header.push(day);
+          }
+
+          rows.push(header);
+
+          for (const employee of employees) {
+
+            const row:
+              Array<string | number> = [
+                employee.name,
+                employee.role,
+              ];
+
+            for (
+              let day = 1;
+              day <= daysInMonth;
+              day += 1
+            ) {
+              row.push(
+                employee.schedules[
+                  String(day)
+                ] || ""
+              );
+            }
+
+            rows.push(row);
+          }
+
+          const sheet =
+            XLSX.utils.aoa_to_sheet(
+              rows
+            );
+
+          sheet["!cols"] = [
+            { wch: 28 },
+            { wch: 14 },
+            ...Array.from(
+              { length: daysInMonth },
+              () => ({ wch: 6 })
+            ),
+          ];
+
+          const safeName =
+            category.name
+              .replace(
+                /[\\\/\?\*\[\]\:]/g,
+                " "
+              )
+              .slice(0, 31);
+
+          XLSX.utils.book_append_sheet(
+            workbook,
+            sheet,
+            safeName
+          );
+        }
+
+        const buffer =
+          XLSX.write(
+            workbook,
+            {
+              type: "buffer",
+              bookType: "xlsx",
+            }
+          );
+
+        const monthNames = [
+          "Januari",
+          "Februari",
+          "Maret",
+          "April",
+          "Mei",
+          "Juni",
+          "Juli",
+          "Agustus",
+          "September",
+          "Oktober",
+          "November",
+          "Desember",
+        ];
+
+        const fileName =
+          `Jadwal Pegawai ${monthNames[monthNumber - 1]} ${year}.xlsx`;
+
+        res.writeHead(
+          200,
+          {
+            "Content-Type":
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+            "Content-Disposition":
+              `attachment; filename="${fileName}"`,
+
+            "Content-Length":
+              buffer.length,
+          }
+        );
+
+        res.end(buffer);
         return;
       }
 sendJson(res, 404, {

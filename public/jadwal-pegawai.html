@@ -136,7 +136,9 @@
             </p>
           </div>
 
-        </section>
+        
+            
+</section>
 
 
         <section class="card schedule-card">
@@ -188,10 +190,163 @@
 
             </div>
 
+          
+            <div class="schedule-export-action">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="exportScheduleExcel"
+              >
+                Export Excel
+              </button>
+            </div>
+</div>
+
+
+          
+          
+          <div
+            class="schedule-import-preview hidden"
+            id="scheduleImportPreview"
+          >
+
+            <div class="schedule-import-preview-head">
+
+              <div>
+                <strong>Preview Import</strong>
+                <p id="scheduleImportSummary"></p>
+              </div>
+
+              <div class="schedule-import-actions">
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="cancelScheduleImport"
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="applyScheduleImport"
+                >
+                  Masukkan ke Matriks
+                </button>
+
+              </div>
+
+            </div>
+
+            <div class="schedule-preview-table-wrap">
+
+              <table class="schedule-preview-table">
+
+                <thead>
+                  <tr>
+                    <th>Nama Excel</th>
+                    <th>Pegawai Attendly</th>
+                    <th>Status</th>
+                    <th>Jumlah Jadwal</th>
+                  </tr>
+                </thead>
+
+                <tbody
+                  id="scheduleImportPreviewBody"
+                ></tbody>
+
+              </table>
+
+            </div>
+            
+
+          
+            
+</div>
+<div
+            class="schedule-code-toolbar"
+            id="scheduleCodeToolbar"
+          >
+
+            <div class="schedule-code-toolbar-left">
+
+              <span class="schedule-code-label">
+                Kode Jadwal
+              </span>
+
+              <div
+                class="schedule-code-buttons"
+                id="scheduleCodeButtons"
+              >
+
+                <button type="button" class="schedule-code-button" data-code="P">P</button>
+                <button type="button" class="schedule-code-button" data-code="M">M</button>
+                <button type="button" class="schedule-code-button" data-code="L">L</button>
+                <button type="button" class="schedule-code-button" data-code="S">S</button>
+
+                <button type="button" class="schedule-code-button" data-code="PS">PS</button>
+                <button type="button" class="schedule-code-button" data-code="PG">PG</button>
+                <button type="button" class="schedule-code-button" data-code="SM">SM</button>
+                <button type="button" class="schedule-code-button" data-code="PV">PV</button>
+                <button type="button" class="schedule-code-button" data-code="PY">PY</button>
+                <button type="button" class="schedule-code-button" data-code="PR">PR</button>
+                <button type="button" class="schedule-code-button" data-code="PTU">PTU</button>
+                <button type="button" class="schedule-code-button" data-code="TGC">TGC</button>
+                <button type="button" class="schedule-code-button" data-code="C">C</button>
+                <button type="button" class="schedule-code-button" data-code="Plansia">Plansia</button>
+
+                <button
+                  type="button"
+                  class="schedule-code-button schedule-code-clear"
+                  data-code=""
+                >
+                  Kosong
+                </button>
+
+              </div>
+
+            </div>
+
+
+            <div class="schedule-save-actions">
+
+                            <button
+                type="button"
+                class="btn btn-secondary"
+                id="editScheduleButton"
+              >
+                Edit Jadwal
+              </button>
+<span
+                class="schedule-change-info"
+                id="scheduleChangeInfo"
+              >
+                Belum ada perubahan
+              </span>
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelScheduleChanges"
+                disabled
+              >
+                Batalkan
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="saveScheduleChanges"
+                disabled
+              >
+                Simpan Perubahan
+              </button>
+
+            </div>
+
           </div>
-
-
-          <div class="schedule-toolbar">
+<div class="schedule-toolbar">
 
             <div>
 
